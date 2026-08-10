@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import { TreeMark } from './Brand'
 
 // Chromium fires this so a site can offer its own install button. iOS Safari
 // never does — there the only route is Share → Add to Home Screen, so we detect
@@ -51,7 +52,7 @@ export default function InstallPrompt() {
 
   return (
     <div className="install-cta" role="complementary">
-      <span className="install-mark">▲</span>
+      <TreeMark className="install-mark" size={30} />
       <div className="install-text">
         <strong>Install AnjunaTree</strong>
         <span>

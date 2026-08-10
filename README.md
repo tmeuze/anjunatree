@@ -66,9 +66,15 @@ npm run ingest
 - **Themes & accessibility** — four themes named after the music
   (`src/themes.ts`), four text sizes, high contrast, larger map marks, and
   reduced motion, all persisted locally (`src/settings.ts`, `src/SettingsPanel.tsx`).
-- **Installable** — a PWA via `vite-plugin-pwa`: the shell *and* the catalogue
-  are precached, so the whole map works offline. Icons are generated
+- **Installable** — a PWA via `vite-plugin-pwa`: the shell, the catalogue, and
+  the fonts are precached, so the whole map works offline. Icons are generated
   dependency-free by `node scripts/make-icons.mjs`.
+- **Brand** — the mark is a canopy of release-dots on a timeline axis, drawn
+  from theme variables (`src/Brand.tsx`) so it re-colours with every theme; the
+  same geometry is rasterised for the favicon and PWA icons. The wordmark is
+  live text in [Jost](https://github.com/indestructible-type/Jost) (SIL OFL),
+  self-hosted rather than loaded from a CDN so the app makes no third-party
+  requests.
 - **Fresh by itself** — a scheduled Action re-reads MusicBrainz weekly and
   redeploys only when the catalogue actually changed.
 - **Colors** — the three label colors (`#3987e5` / `#199e70` / `#d95926`)

@@ -37,7 +37,7 @@ export default defineConfig({
       },
       workbox: {
         // Precache the shell *and* the catalogue, so the whole map works offline.
-        globPatterns: ['**/*.{js,css,html,svg,png,json}'],
+        globPatterns: ['**/*.{js,css,html,svg,png,json,woff2}'],
         maximumFileSizeToCacheInBytes: 4 * 1024 * 1024,
         navigateFallbackDenylist: [/^\/itunes/],
         runtimeCaching: [

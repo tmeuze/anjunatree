@@ -1,3 +1,22 @@
+/* Jost — self-hosted (SIL OFL 1.1, see src/fonts/Jost-OFL.txt). Not loaded
+   from a CDN: the app makes no third-party requests, and a local font keeps
+   the wordmark correct when installed as an offline PWA. */
+@font-face {
+  font-family: 'Jost';
+  src: url('./fonts/jost-400-latin.woff2') format('woff2');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Jost';
+  src: url('./fonts/jost-700-latin.woff2') format('woff2');
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+}
+
 :root {
   font-family: 'Inter', system-ui, -apple-system, sans-serif;
   color-scheme: dark;
@@ -53,23 +72,35 @@ body {
 
 .brand {
   display: flex;
-  align-items: baseline;
-  gap: 8px;
+  align-items: center;
+  gap: 9px;
 }
 
 .brand-mark {
-  font-size: calc(14px * var(--font-scale));
-  background: linear-gradient(135deg, var(--label-anjunabeats) 20%, var(--label-anjunadeep) 80%);
-  -webkit-background-clip: text;
-  background-clip: text;
-  color: transparent;
-  filter: drop-shadow(0 0 8px color-mix(in srgb, var(--label-anjunabeats) 55%, transparent));
+  display: block;
+  flex-shrink: 0;
+  color: var(--ink);
+}
+
+/* Small caps with "Tree" bold. Live text, not an image, so it follows the
+   text-size setting and stays selectable. */
+.wordmark {
+  font-family: 'Jost', system-ui, -apple-system, sans-serif;
+  font-variant-caps: small-caps;
+  font-weight: 400;
+  font-size: calc(19px * var(--font-scale));
+  letter-spacing: 0.11em;
+  line-height: 1;
+  color: var(--ink);
+  white-space: nowrap;
+}
+
+.wordmark b {
+  font-weight: 700;
 }
 
 .brand h1 {
-  font-size: calc(17px * var(--font-scale));
-  font-weight: 700;
-  letter-spacing: 0.02em;
+  margin: 0;
 }
 
 .brand-sub {
@@ -266,11 +297,7 @@ body {
 }
 
 .loading-mark {
-  font-size: calc(18px * var(--font-scale));
-  background: linear-gradient(135deg, var(--label-anjunabeats), var(--label-anjunadeep));
-  -webkit-background-clip: text;
-  background-clip: text;
-  color: transparent;
+  color: var(--ink);
   animation: pulse 1.4s ease-in-out infinite;
 }
 
@@ -1150,11 +1177,8 @@ body {
 }
 
 .install-mark {
-  font-size: calc(18px * var(--font-scale));
-  background: linear-gradient(135deg, var(--label-anjunabeats), var(--label-anjunadeep));
-  -webkit-background-clip: text;
-  background-clip: text;
-  color: transparent;
+  color: var(--ink);
+  flex-shrink: 0;
 }
 
 .install-text {

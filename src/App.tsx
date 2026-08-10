@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { TreeMark, Wordmark } from './Brand'
 import Info from './Info'
 import type { InfoTab } from './Info'
 import InstallPrompt from './InstallPrompt'
@@ -226,8 +227,10 @@ export default function App() {
     <div className="app">
       <header className="header">
         <div className="brand">
-          <span className="brand-mark">▲</span>
-          <h1>AnjunaTree</h1>
+          <TreeMark className="brand-mark" size={28} />
+          <h1>
+            <Wordmark />
+          </h1>
           <span className="brand-sub">
             the{' '}
             <a href={LABEL_SITE_URL} target="_blank" rel="noreferrer noopener">
@@ -306,7 +309,7 @@ export default function App() {
       {!error && !layout && (
         <div className="status">
           <div className="loading">
-            <span className="loading-mark">▲</span>
+            <TreeMark className="loading-mark" size={26} />
             <span>Arranging the catalogue…</span>
           </div>
         </div>

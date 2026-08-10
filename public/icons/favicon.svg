@@ -1,7 +1,25 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
-  <defs><linearGradient id="g" x1="0" y1="0" x2="0" y2="1">
-    <stop offset="0" stop-color="#3987e5"/><stop offset="1" stop-color="#199e70"/>
-  </linearGradient></defs>
-  <rect width="64" height="64" rx="12" fill="#0b0d12"/>
-  <path d="M32 14 L52 48 L12 48 Z" fill="url(#g)"/>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 96 96">
+  <rect width="96" height="96" rx="18" fill="#0b0d12"/>
+  <g transform="translate(0 -4)">
+    <g stroke="#6f747f" stroke-width="1.8" stroke-linecap="round">
+    <line x1="10" y1="86" x2="86" y2="86"/>
+    <line x1="26" y1="86" x2="26" y2="91"/>
+    <line x1="48" y1="86" x2="48" y2="91"/>
+    <line x1="70" y1="86" x2="70" y2="91"/>
+    </g>
+    <line x1="48" y1="86" x2="48" y2="58" stroke="#e6e8ee" stroke-width="4" stroke-linecap="round"/>
+    <g fill="#e6e8ee">
+    <circle cx="34" cy="52" r="3"/>
+    <circle cx="48" cy="50" r="4"/>
+    <circle cx="62" cy="52" r="3"/>
+    <circle cx="26" cy="41" r="2.6"/>
+    <circle cx="40" cy="40" r="4"/>
+    <circle cx="56" cy="40" r="3.6"/>
+    <circle cx="70" cy="41" r="2.6"/>
+    <circle cx="34" cy="30" r="3"/>
+    <circle cx="48" cy="29" r="2.6"/>
+    <circle cx="62" cy="30" r="3.6"/>
+    </g>
+    <circle cx="48" cy="18" r="5" fill="#199e70"/>
+  </g>
 </svg>
