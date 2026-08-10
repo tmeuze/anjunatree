@@ -227,7 +227,7 @@ export default function App() {
     <div className="app">
       <header className="header">
         <div className="brand">
-          <TreeMark className="brand-mark" size={28} />
+          <TreeMark className="brand-mark" size={30} />
           <h1>
             <Wordmark />
           </h1>

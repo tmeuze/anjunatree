@@ -21,34 +21,45 @@ const INK = [0xe6, 0xe8, 0xee] // --ink, trunk + canopy
 const CROWN = [0x19, 0x9e, 0x70] // --label-anjunadeep, the newest release
 const SS = 4 // supersampling factor, for antialiased edges
 
-// --- the mark, in the SVG's 96x96 artboard ----------------------------------
+// --- the mark, in the 100x100 artboard (kept in step with src/Brand.tsx) ----
 
-const AXIS_STROKE = 1.8
-const TRUNK_STROKE = 4
+const AXIS_STROKE = 1.6
+const TRUNK_STROKE = 2.6
 
-const AXIS_LINES = [
-  [10, 86, 86, 86], // the timeline itself
-  [26, 86, 26, 91], // ticks
-  [48, 86, 48, 91],
-  [70, 86, 70, 91],
-]
-const TRUNK = [48, 86, 48, 58]
+const AXIS_Y = 94.7
+const TICK_BOTTOM = 100
+const AXIS_LINE = [1.05, AXIS_Y, 99.4, AXIS_Y]
+const TICKS = [19.5, 34.6, 50, 65.3, 80.7]
+const TRUNK = [50, 94.7, 50, 57.5]
+
 const CANOPY = [
-  [34, 52, 3],
-  [48, 50, 4],
-  [62, 52, 3],
-  [26, 41, 2.6],
-  [40, 40, 4],
-  [56, 40, 3.6],
-  [70, 41, 2.6],
-  [34, 30, 3],
-  [48, 29, 2.6],
-  [62, 30, 3.6],
+  [21.9, 36.7, 2.4],
+  [39.9, 36.7, 4.1],
+  [60.3, 36.7, 3.4],
+  [78.3, 36.7, 2.2],
+  [32.2, 49.2, 2.9],
+  [50.0, 49.2, 4.3],
+  [68.0, 49.2, 3.1],
 ]
-const CROWN_DOT = [48, 18, 5]
 
-/** Content spans y 13..91, whose centre is 52 — shift up to centre it optically. */
-const Y_NUDGE = 4
+// Five splayed fronds — the palm fan.
+const FROND_ANGLES = [-65, -35, 0, 35, 65]
+const FAN_ORIGIN = [50, 31.2]
+const FROND_LENGTH = 31.2
+const FROND_HALF_BASE = 1.7
+
+/** Each frond as a triangle [ [x,y], [x,y], [x,y] ] so it tapers to a point. */
+const FRONDS = FROND_ANGLES.map((deg) => {
+  const t = (deg * Math.PI) / 180
+  const [x, y] = FAN_ORIGIN
+  const tip = [x + Math.sin(t) * FROND_LENGTH, y - Math.cos(t) * FROND_LENGTH]
+  const px = Math.cos(t) * FROND_HALF_BASE
+  const py = Math.sin(t) * FROND_HALF_BASE
+  return [[x + px, y + py], tip, [x - px, y - py]]
+})
+
+/** Artwork already fills its box edge to edge, so nothing needs nudging. */
+const ART_SIZE = 100
 
 const crcTable = Array.from({ length: 256 }, (_, n) => {
   let c = n
@@ -106,25 +117,37 @@ function distToSegment(px, py, x1, y1, x2, y2) {
   return Math.hypot(px - (x1 + t * dx), py - (y1 + t * dy))
 }
 
+/** Winding test — a point is inside when it sits on one side of all three edges. */
+function inTriangle(px, py, [[ax, ay], [bx, by], [cx, cy]]) {
+  const d1 = (px - bx) * (ay - by) - (ax - bx) * (py - by)
+  const d2 = (px - cx) * (by - cy) - (bx - cx) * (py - cy)
+  const d3 = (px - ax) * (cy - ay) - (cx - ax) * (py - ay)
+  const neg = d1 < 0 || d2 < 0 || d3 < 0
+  const pos = d1 > 0 || d2 > 0 || d3 > 0
+  return !(neg && pos)
+}
+
 /** Colour of the artboard at (ax, ay), painted in SVG order — later wins. */
 function sampleArt(ax, ay) {
   let c = BG
-  for (const [x1, y1, x2, y2] of AXIS_LINES) {
-    if (distToSegment(ax, ay, x1, y1, x2, y2) <= AXIS_STROKE / 2) c = AXIS
+  if (distToSegment(ax, ay, ...AXIS_LINE) <= AXIS_STROKE / 2) c = AXIS
+  for (const x of TICKS) {
+    if (distToSegment(ax, ay, x, AXIS_Y, x, TICK_BOTTOM) <= AXIS_STROKE / 2) c = AXIS
   }
   if (distToSegment(ax, ay, ...TRUNK) <= TRUNK_STROKE / 2) c = INK
   for (const [cx, cy, r] of CANOPY) {
     if (Math.hypot(ax - cx, ay - cy) <= r) c = INK
   }
-  const [kx, ky, kr] = CROWN_DOT
-  if (Math.hypot(ax - kx, ay - ky) <= kr) c = CROWN
+  for (const tri of FRONDS) {
+    if (inTriangle(ax, ay, tri)) c = CROWN
+  }
   return c
 }
 
 function render(size, contentFraction) {
   const rgba = new Uint8Array(size * size * 4)
-  const s = (size * contentFraction) / 96
-  const origin = (size - 96 * s) / 2
+  const s = (size * contentFraction) / ART_SIZE
+  const origin = (size - ART_SIZE * s) / 2
 
   for (let y = 0; y < size; y++) {
     for (let x = 0; x < size; x++) {
@@ -134,7 +157,7 @@ function render(size, contentFraction) {
       for (let sy = 0; sy < SS; sy++) {
         for (let sx = 0; sx < SS; sx++) {
           const ax = (x + (sx + 0.5) / SS - origin) / s
-          const ay = (y + (sy + 0.5) / SS - origin) / s + Y_NUDGE
+          const ay = (y + (sy + 0.5) / SS - origin) / s
           const c = sampleArt(ax, ay)
           r += c[0]
           g += c[1]
@@ -172,29 +195,33 @@ for (const { file, size, frac } of targets) {
 
 // A crisp vector favicon for browser tabs — same mark, fixed dark palette so it
 // reads on both light and dark browser chrome.
-const axis = AXIS_LINES.map(
-  ([x1, y1, x2, y2]) => `    <line x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}"/>`,
+const hex = (c) => '#' + c.map((v) => v.toString(16).padStart(2, '0')).join('')
+const ticks = TICKS.map(
+  (x) => `    <line x1="${x}" y1="${AXIS_Y}" x2="${x}" y2="${TICK_BOTTOM}"/>`,
 ).join('\n')
 const canopy = CANOPY.map(([cx, cy, r]) => `    <circle cx="${cx}" cy="${cy}" r="${r}"/>`).join(
   '\n',
 )
-const hex = (c) => '#' + c.map((v) => v.toString(16).padStart(2, '0')).join('')
+const fronds = FRONDS.map(
+  (tri) => `    <polygon points="${tri.map(([x, y]) => `${x},${y}`).join(' ')}"/>`,
+).join('\n')
 
 writeFileSync(
   path.join(outDir, 'favicon.svg'),
-  `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 96 96">
-  <rect width="96" height="96" rx="18" fill="${hex(BG)}"/>
-  <g transform="translate(0 -${Y_NUDGE})">
-    <g stroke="${hex(AXIS)}" stroke-width="${AXIS_STROKE}" stroke-linecap="round">
-${axis}
-    </g>
-    <line x1="${TRUNK[0]}" y1="${TRUNK[1]}" x2="${TRUNK[2]}" y2="${TRUNK[3]}" stroke="${hex(
-      INK,
-    )}" stroke-width="${TRUNK_STROKE}" stroke-linecap="round"/>
-    <g fill="${hex(INK)}">
+  `<svg xmlns="http://www.w3.org/2000/svg" viewBox="-6 -6 112 112">
+  <rect x="-6" y="-6" width="112" height="112" rx="20" fill="${hex(BG)}"/>
+  <g stroke="${hex(AXIS)}" stroke-width="${AXIS_STROKE}" stroke-linecap="round">
+    <line x1="${AXIS_LINE[0]}" y1="${AXIS_LINE[1]}" x2="${AXIS_LINE[2]}" y2="${AXIS_LINE[3]}"/>
+${ticks}
+  </g>
+  <line x1="${TRUNK[0]}" y1="${TRUNK[1]}" x2="${TRUNK[2]}" y2="${TRUNK[3]}" stroke="${hex(
+    INK,
+  )}" stroke-width="${TRUNK_STROKE}" stroke-linecap="round"/>
+  <g fill="${hex(INK)}">
 ${canopy}
-    </g>
-    <circle cx="${CROWN_DOT[0]}" cy="${CROWN_DOT[1]}" r="${CROWN_DOT[2]}" fill="${hex(CROWN)}"/>
+  </g>
+  <g fill="${hex(CROWN)}">
+${fronds}
   </g>
 </svg>
 `,

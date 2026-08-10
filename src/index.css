@@ -70,10 +70,15 @@ body {
   flex-wrap: wrap;
 }
 
+/* The lockup. The mark's viewBox is its exact artwork bounds and the wordmark
+   sits in a line box trimmed to its own size, so `align-items: center` lands
+   both on the same optical centre — and the block stays no taller than the
+   header's buttons, so it can't knock the navbar's vertical rhythm out. */
 .brand {
   display: flex;
   align-items: center;
-  gap: 9px;
+  gap: 10px;
+  min-width: 0;
 }
 
 .brand-mark {
@@ -82,21 +87,44 @@ body {
   color: var(--ink);
 }
 
+.brand h1 {
+  display: flex;
+  align-items: center;
+  min-width: 0;
+}
+
 /* Small caps with "Tree" bold. Live text, not an image, so it follows the
-   text-size setting and stays selectable. */
+   text-size setting and stays selectable.
+
+   `all-small-caps` rather than `small-caps`: it renders every letter at the
+   same small-cap height, matching the evenly-set ANJUNA wordmark, instead of
+   leaving the A and T standing full height. Weight carries "Tree", not size. */
 .wordmark {
   font-family: 'Jost', system-ui, -apple-system, sans-serif;
-  font-variant-caps: small-caps;
+  font-variant-caps: all-small-caps;
   font-weight: 400;
-  font-size: calc(19px * var(--font-scale));
-  letter-spacing: 0.11em;
+  font-size: calc(20px * var(--font-scale));
+  letter-spacing: 0.13em;
   line-height: 1;
   color: var(--ink);
   white-space: nowrap;
+  /* Small caps have no descenders, so the glyphs sit low in their line box;
+     lift them onto the true optical centre. */
+  margin-block-start: -0.06em;
 }
 
 .wordmark b {
   font-weight: 700;
+  /* Bold sets slightly looser; pull it back so tracking reads even across the
+     regular/bold join. */
+  letter-spacing: 0.115em;
+}
+
+/* The trailing letter-space renders after the final E, pushing the mark
+   visually left of centre. Reclaim it. */
+.wordmark b::after {
+  content: '';
+  margin-inline-start: -0.13em;
 }
 
 .brand h1 {
