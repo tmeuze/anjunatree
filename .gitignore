@@ -1,0 +1,12 @@
+node_modules
+dist
+*.local
+.DS_Store
+*.tsbuildinfo
+
+# Credentials — the Apple signing key and every real env file.
+# .env.example is the tracked template and must stay visible.
+*.p8
+.env
+.env.*
+!.env.example

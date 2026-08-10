@@ -1,0 +1,29 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "anjunatree-dev",
+      "runtimeExecutable": "npm",
+      "runtimeArgs": ["run", "dev"],
+      "port": 5173
+    },
+    {
+      "name": "anjunatree-prod-preview",
+      "runtimeExecutable": "npm",
+      "runtimeArgs": ["run", "preview", "--", "--port", "4173"],
+      "port": 4173
+    },
+    {
+      "name": "anjunatree-subpath-test",
+      "runtimeExecutable": "python3",
+      "runtimeArgs": [
+        "-m",
+        "http.server",
+        "4200",
+        "--directory",
+        "/private/tmp/claude-501/-Users-tmeuze-Workspaces-Apps-anjunatree/0d92fe0a-db7c-40b6-824b-6b7d4bce6095/scratchpad/pages-test"
+      ],
+      "port": 4200
+    }
+  ]
+}
