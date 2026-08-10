@@ -1,10 +1,11 @@
 import { useEffect, useRef } from 'react'
 import { select, zoom, zoomIdentity, quadtree } from 'd3'
 import type { ZoomTransform, Quadtree } from 'd3'
-import { LABEL_META, WORLD, spectrumToY } from './data'
+import { LABEL_KEYS, LABEL_META, WORLD, spectrumToY } from './data'
 import type { CatalogLayout } from './data'
 import { MILESTONES } from './milestones'
 import { SHAPE_LABEL, traceShape } from './shapes'
+import type { ThemeColors } from './themes'
 import type { MapNode, ViewKey } from './types'
 
 interface Props {
@@ -15,6 +16,12 @@ interface Props {
   constellation: MapNode[]
   selectedId: string | null
   onSelect: (n: MapNode | null) => void
+  /** live theme + accessibility settings; the canvas can't read CSS variables */
+  colors: ThemeColors
+  fontScale: number
+  highContrast: boolean
+  reduceMotion: boolean
+  largeMarks: boolean
 }
 
 const MAX_R = 7.5
@@ -33,6 +40,11 @@ export default function MapCanvas({
   constellation,
   selectedId,
   onSelect,
+  colors,
+  fontScale,
+  highContrast,
+  reduceMotion,
+  largeMarks,
 }: Props) {
   const containerRef = useRef<HTMLDivElement>(null)
   const canvasRef = useRef<HTMLCanvasElement>(null)
@@ -47,9 +59,9 @@ export default function MapCanvas({
     userZoomed: false,
     viewMix: 0, // 0 = lane view, 1 = spectrum view; eased toward the target each frame
     scheduleDraw: () => {},
-    props: { layout, view, isActive, constellation, selectedId, onSelect },
+    props: { layout, view, isActive, constellation, selectedId, onSelect, colors, fontScale, highContrast, reduceMotion, largeMarks },
   })
-  stateRef.current.props = { layout, view, isActive, constellation, selectedId, onSelect }
+  stateRef.current.props = { layout, view, isActive, constellation, selectedId, onSelect, colors, fontScale, highContrast, reduceMotion, largeMarks }
 
   // Hit-testing uses the *target* view's resting positions.
   useEffect(() => {
@@ -84,11 +96,14 @@ export default function MapCanvas({
     function draw() {
       const { w, h, dpr } = size()
       const { transform: t, props } = st
-      const { layout, isActive, selectedId } = props
+      const { layout, isActive, selectedId, colors, highContrast, reduceMotion, largeMarks } =
+        props
+      const markScale = largeMarks ? 1.55 : 1
 
       // Ease the view mix toward its target; keep animating until settled.
       const targetMix = props.view === 'spectrum' ? 1 : 0
-      st.viewMix += (targetMix - st.viewMix) * 0.16
+      if (reduceMotion) st.viewMix = targetMix
+      else st.viewMix += (targetMix - st.viewMix) * 0.16
       const mix = Math.abs(st.viewMix - targetMix) < 0.002 ? (st.viewMix = targetMix) : st.viewMix
 
       ctx.setTransform(dpr, 0, 0, dpr, 0, 0)
@@ -115,9 +130,9 @@ export default function MapCanvas({
 
       const drawNode = (n: MapNode, alpha: number) => {
         const [px, py] = posOf(n)
-        const r = n.r * rScale
+        const r = n.r * rScale * markScale
         ctx.globalAlpha = alpha
-        const color = LABEL_META[n.lane].color
+        const color = colors[n.lane]
         traceShape(ctx, n.shape, px, py, r)
         if (n.shape === 'ring') {
           ctx.strokeStyle = color
@@ -135,15 +150,25 @@ export default function MapCanvas({
         if (members?.has(n.rel.id)) continue // members drawn above the line
         // With a constellation lit, everything else recedes — but nodes that
         // match the current search/filters stay faintly readable.
-        drawNode(n, members ? (isActive(n) ? 0.3 : 0.045) : isActive(n) ? 0.92 : 0.09)
+        const lit = isActive(n)
+        drawNode(
+          n,
+          members
+            ? lit
+              ? highContrast ? 0.5 : 0.3
+              : highContrast ? 0.12 : 0.045
+            : lit
+              ? 0.92
+              : highContrast ? 0.26 : 0.09,
+        )
       }
 
       if (members) {
         // The constellation line, then its stars on top.
         ctx.globalAlpha = 1
-        ctx.strokeStyle = 'rgba(230,232,238,0.4)'
+        ctx.strokeStyle = `rgba(${colors.constellation}, ${highContrast ? 0.7 : 0.45})`
         ctx.lineWidth = 1 / t.k
-        ctx.shadowColor = 'rgba(230,232,238,0.6)'
+        ctx.shadowColor = `rgba(${colors.constellation}, 0.6)`
         ctx.shadowBlur = 6
         ctx.beginPath()
         constellation.forEach((n, i) => {
@@ -167,13 +192,13 @@ export default function MapCanvas({
         ctx.strokeStyle = color
         ctx.lineWidth = 1.5 / t.k
         ctx.beginPath()
-        ctx.arc(px, py, n.r * rScale + 3 / t.k, 0, Math.PI * 2)
+        ctx.arc(px, py, n.r * rScale * markScale + 3 / t.k, 0, Math.PI * 2)
         ctx.stroke()
         ctx.shadowBlur = 0
       }
       if (st.hovered && st.hovered.rel.id !== selectedId)
-        ring(st.hovered, 'rgba(230,232,238,0.75)', LABEL_META[st.hovered.lane].color)
-      if (selected) ring(selected, '#ffffff', LABEL_META[selected.lane].color)
+        ring(st.hovered, `rgba(${colors.constellation}, 0.75)`, colors[st.hovered.lane])
+      if (selected) ring(selected, colors.ink, colors[selected.lane])
 
       ctx.setTransform(dpr, 0, 0, dpr, 0, 0)
       if (mix !== targetMix) scheduleDraw()
@@ -188,11 +213,13 @@ export default function MapCanvas({
       if (alpha < 0.02) return
       ctx.textBaseline = 'middle'
       ctx.textAlign = 'left'
-      ctx.font = '600 11px system-ui, sans-serif'
-      for (const meta of Object.values(LABEL_META)) {
+      const { colors, fontScale } = st.props
+      ctx.font = `600 ${11 * fontScale}px system-ui, sans-serif`
+      for (const key of LABEL_KEYS) {
+        const meta = LABEL_META[key]
         const y = Math.max(28, Math.min(h - 40, t.applyY(meta.laneY)))
         ctx.globalAlpha = 0.9 * alpha
-        ctx.fillStyle = meta.color
+        ctx.fillStyle = colors[key]
         ctx.fillText(meta.name.toUpperCase(), 14, y)
       }
       ctx.globalAlpha = 1
@@ -205,21 +232,22 @@ export default function MapCanvas({
       const yBottom = t.applyY(spectrumToY(1))
 
       // Gradient rail along the left edge, echoing the label colors.
+      const { colors, fontScale } = st.props
       const grad = ctx.createLinearGradient(0, yTop, 0, yBottom)
-      grad.addColorStop(0, '#3987e5')
-      grad.addColorStop(0.5, '#199e70')
-      grad.addColorStop(1, '#d95926')
+      grad.addColorStop(0, colors.anjunabeats)
+      grad.addColorStop(0.5, colors.anjunadeep)
+      grad.addColorStop(1, colors.reflections)
       ctx.globalAlpha = 0.8 * alpha
       ctx.fillStyle = grad
       ctx.fillRect(8, yTop, 3, yBottom - yTop)
 
       ctx.textBaseline = 'middle'
       ctx.textAlign = 'left'
-      ctx.font = '600 10px system-ui, sans-serif'
+      ctx.font = `600 ${10 * fontScale}px system-ui, sans-serif`
       for (const band of SPECTRUM_BANDS) {
         const y = t.applyY(spectrumToY(band.s))
         ctx.globalAlpha = 0.28 * alpha
-        ctx.strokeStyle = '#ffffff'
+        ctx.strokeStyle = `rgba(${colors.constellation}, 1)`
         ctx.lineWidth = 1
         ctx.setLineDash([2, 6])
         ctx.beginPath()
@@ -228,7 +256,7 @@ export default function MapCanvas({
         ctx.stroke()
         ctx.setLineDash([])
         ctx.globalAlpha = 0.85 * alpha
-        ctx.fillStyle = '#9aa0ae'
+        ctx.fillStyle = colors.inkSecondary
         ctx.fillText(band.label, 18, y)
       }
       ctx.globalAlpha = 1
@@ -248,19 +276,20 @@ export default function MapCanvas({
         (layout.timeToX(Date.UTC(2001, 0, 1)) - layout.timeToX(Date.UTC(2000, 0, 1))) * t.k
       const step = yearW > 55 ? 1 : yearW > 28 ? 2 : yearW > 12 ? 5 : 10
 
-      ctx.font = '11px system-ui, sans-serif'
+      const { colors, fontScale } = st.props
+      ctx.font = `${11 * fontScale}px system-ui, sans-serif`
       ctx.textAlign = 'center'
       ctx.textBaseline = 'alphabetic'
       for (let y = Math.ceil(y0 / step) * step; y <= y1; y += step) {
         const sx = t.applyX(layout.timeToX(Date.UTC(y, 0, 1)))
         if (sx < -20 || sx > w + 20) continue
-        ctx.strokeStyle = 'rgba(255,255,255,0.055)'
+        ctx.strokeStyle = colors.gridline
         ctx.lineWidth = 1
         ctx.beginPath()
         ctx.moveTo(sx, 0)
         ctx.lineTo(sx, h - 26)
         ctx.stroke()
-        ctx.fillStyle = '#898781'
+        ctx.fillStyle = colors.inkMuted
         ctx.fillText(String(y), sx, h - 10)
       }
       ctx.textAlign = 'left'
@@ -276,8 +305,9 @@ export default function MapCanvas({
       const yearW =
         (layout.timeToX(Date.UTC(2001, 0, 1)) - layout.timeToX(Date.UTC(2000, 0, 1))) * t.k
       const showLabels = yearW > 90
-      const gold = '230, 200, 140'
-      ctx.font = '600 10px system-ui, sans-serif'
+      const { colors, fontScale } = st.props
+      const gold = colors.milestone
+      ctx.font = `600 ${10 * fontScale}px system-ui, sans-serif`
       ctx.textAlign = 'left'
       ctx.textBaseline = 'alphabetic'
       MILESTONES.forEach((m, i) => {
@@ -319,7 +349,8 @@ export default function MapCanvas({
       const getY = st.props.view === 'spectrum' ? found.sy : found.ly
       const dist = Math.hypot(getX - wx, getY - wy)
       const rScale = 1 / Math.sqrt(st.transform.k)
-      return dist <= found.r * rScale + 4 / st.transform.k ? found : null
+      const markScale = st.props.largeMarks ? 1.55 : 1
+      return dist <= found.r * rScale * markScale + 4 / st.transform.k ? found : null
     }
 
     const zoomBehavior = zoom<HTMLCanvasElement, unknown>()
@@ -428,7 +459,7 @@ export default function MapCanvas({
   // Redraw when filters/selection/view/constellation change.
   useEffect(() => {
     stateRef.current.scheduleDraw()
-  }, [layout, view, isActive, selectedId, constellation])
+  }, [layout, view, isActive, selectedId, constellation, colors, fontScale, highContrast, reduceMotion, largeMarks])
 
   return (
     <div ref={containerRef} className="map-container">

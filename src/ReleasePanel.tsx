@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { findRelease, lookupTracks } from './itunes'
 import type { ReleaseMatch } from './itunes'
-import { LABEL_META } from './data'
+import { LABEL_META, labelVar } from './data'
 import { SHAPE_LABEL } from './shapes'
 import type { AlbumTrack, MapNode, NowPlaying } from './types'
 
@@ -141,7 +141,7 @@ export default function ReleasePanel({
         ) : (
           <div
             className="panel-art panel-art-placeholder"
-            style={{ background: LABEL_META[node.lane].color }}
+            style={{ background: labelVar(node.lane) }}
           />
         )}
         <div className="panel-title">{rel.title}</div>
@@ -195,7 +195,7 @@ export default function ReleasePanel({
           >
             <span className="track-num">
               {isCurrentRelease && nowPlaying?.index === i && !playerPaused ? (
-                <span className="eq" style={{ color: LABEL_META[node.lane].color }}>
+                <span className="eq" style={{ color: labelVar(node.lane) }}>
                   <span />
                   <span />
                   <span />

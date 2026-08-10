@@ -1,12 +1,20 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import Info from './Info'
 import type { InfoTab } from './Info'
+import InstallPrompt from './InstallPrompt'
+import Latest from './Latest'
 import MapCanvas from './MapCanvas'
 import PlayerBar from './PlayerBar'
 import ReleasePanel, { VARIOUS_ARTISTS_MBID } from './ReleasePanel'
+import SettingsPanel from './SettingsPanel'
 import ShapeLegend from './ShapeLegend'
-import { LABEL_KEYS, LABEL_META, layoutCatalog, loadCatalog } from './data'
+import { LABEL_KEYS, LABEL_META, layoutCatalog, loadCatalog, labelVar } from './data'
 import type { CatalogLayout } from './data'
+import { applySettings, loadSettings, saveSettings, scaleOf } from './settings'
+import type { Settings } from './settings'
+import { applyTheme, getTheme } from './themes'
+import * as spotify from './spotify'
+import { LABEL_SITE_URL, REPO_URL } from './constants'
 import type { LabelKey, MapNode, NowPlaying, ViewKey } from './types'
 
 interface HashState {
@@ -47,6 +55,24 @@ export default function App() {
   const [infoTab, setInfoTab] = useState<InfoTab | null>(null)
   const [nowPlaying, setNowPlaying] = useState<NowPlaying | null>(null)
   const [playerPaused, setPlayerPaused] = useState(false)
+  const [settings, setSettings] = useState<Settings>(loadSettings)
+  const [showSettings, setShowSettings] = useState(false)
+  const [showLatest, setShowLatest] = useState(false)
+  const [generatedAt, setGeneratedAt] = useState<string | null>(null)
+
+  const theme = useMemo(() => getTheme(settings.theme), [settings.theme])
+
+  // Preferences drive CSS custom properties; the canvas gets the values as props.
+  useEffect(() => {
+    applyTheme(theme)
+    applySettings(settings)
+    saveSettings(settings)
+  }, [theme, settings])
+
+  // If we came back from the Spotify consent screen, finish the exchange.
+  useEffect(() => {
+    spotify.completeLoginFromRedirect().catch(() => {})
+  }, [])
 
   // Selecting a release lights up its first credited artist's constellation.
   const selectNode = useCallback((n: MapNode | null) => {
@@ -57,7 +83,10 @@ export default function App() {
 
   useEffect(() => {
     loadCatalog()
-      .then((releases) => setLayout(layoutCatalog(releases)))
+      .then(({ releases, generatedAt }) => {
+        setLayout(layoutCatalog(releases))
+        setGeneratedAt(generatedAt)
+      })
       .catch((e) => setError(String(e)))
   }, [])
 
@@ -99,12 +128,14 @@ export default function App() {
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
       if (e.key !== 'Escape') return
-      if (infoTab) setInfoTab(null)
+      if (showSettings) setShowSettings(false)
+      else if (infoTab) setInfoTab(null)
+      else if (showLatest) setShowLatest(false)
       else selectNode(null)
     }
     window.addEventListener('keydown', onKey)
     return () => window.removeEventListener('keydown', onKey)
-  }, [selectNode, infoTab])
+  }, [selectNode, infoTab, showSettings, showLatest])
 
   const isActive = useMemo(() => {
     const q = query.trim().toLowerCase()
@@ -197,12 +228,18 @@ export default function App() {
         <div className="brand">
           <span className="brand-mark">▲</span>
           <h1>AnjunaTree</h1>
-          <span className="brand-sub">the Anjuna catalog, mapped</span>
+          <span className="brand-sub">
+            the{' '}
+            <a href={LABEL_SITE_URL} target="_blank" rel="noreferrer noopener">
+              Anjuna
+            </a>{' '}
+            music catalogue, visualised.
+          </span>
         </div>
         <input
           className="search"
           type="search"
-          placeholder="Search artist, title, or catalog #…"
+          placeholder="Search artist, title, or catalogue #…"
           value={query}
           onChange={(e) => setQuery(e.target.value)}
         />
@@ -231,36 +268,61 @@ export default function App() {
         >
           {radio ? '■' : '▸'} Radio
         </button>
+        <button
+          className={`info-button${showLatest ? ' on' : ''}`}
+          onClick={() => setShowLatest((v) => !v)}
+          aria-pressed={showLatest}
+          title="What's new on the labels"
+        >
+          ✦ Latest
+        </button>
         <div className="legend">
           {LABEL_KEYS.map((key) => (
             <button
               key={key}
               className={`legend-chip${enabled.has(key) ? '' : ' off'}`}
               onClick={() => toggleLabel(key)}
+              aria-pressed={enabled.has(key)}
             >
-              <span className="legend-dot" style={{ background: LABEL_META[key].color }} />
+              <span className="legend-dot" style={{ background: labelVar(key) }} />
               {LABEL_META[key].name}
             </button>
           ))}
         </div>
         <Info tab={infoTab} onOpen={setInfoTab} onClose={() => setInfoTab(null)} />
+        <button
+          className="info-button"
+          onClick={() => setShowSettings(true)}
+          title="Themes, text size, accessibility, Spotify"
+        >
+          ⚙ Settings
+        </button>
         <div className="count">
           {layout ? `${matchCount.toLocaleString()} releases` : 'Loading…'}
         </div>
       </header>
 
-      {error && <div className="status">Failed to load catalog: {error}</div>}
+      {error && <div className="status">Failed to load catalogue: {error}</div>}
       {!error && !layout && (
         <div className="status">
           <div className="loading">
             <span className="loading-mark">▲</span>
-            <span>Arranging the catalog…</span>
+            <span>Arranging the catalogue…</span>
           </div>
         </div>
       )}
       {layout && <ShapeLegend layout={layout} isActive={isActive} />}
       {layout && (
         <div className="content-row">
+          {showLatest && (
+            <Latest
+              layout={layout}
+              generatedAt={generatedAt}
+              selectedId={selected?.rel.id ?? null}
+              onSelect={selectNode}
+              onClose={() => setShowLatest(false)}
+            />
+          )}
           <div className="map-wrap">
             <MapCanvas
               layout={layout}
@@ -269,6 +331,11 @@ export default function App() {
               constellation={constellation}
               selectedId={selected?.rel.id ?? null}
               onSelect={selectNode}
+              colors={theme.colors}
+              fontScale={scaleOf(settings.fontScale)}
+              highContrast={settings.highContrast}
+              reduceMotion={settings.reduceMotion}
+              largeMarks={settings.largeMarks}
             />
             {view === 'spectrum' && (
               <div className="spectrum-note">
@@ -305,6 +372,31 @@ export default function App() {
           }}
         />
       )}
+
+      <footer className="site-footer">
+        <span>
+          A passion project by a fan. <strong>Not affiliated with</strong> Anjunabeats,
+          Anjunadeep, Anjunachill, Involved Group, or any artist — and not endorsed by
+          them. All music and artwork belong to their rights holders.
+        </span>
+        <span className="footer-links">
+          <a href={REPO_URL} target="_blank" rel="noreferrer noopener">
+            Source on GitHub
+          </a>
+          <button className="footer-link-button" onClick={() => setInfoTab('about')}>
+            About
+          </button>
+        </span>
+      </footer>
+
+      {showSettings && (
+        <SettingsPanel
+          settings={settings}
+          onChange={setSettings}
+          onClose={() => setShowSettings(false)}
+        />
+      )}
+      <InstallPrompt />
     </div>
   )
 }

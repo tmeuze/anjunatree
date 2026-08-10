@@ -2,7 +2,7 @@
 // MusicBrainz etiquette: 1 request/second, descriptive User-Agent.
 // Run with: npm run ingest
 
-import { mkdir, writeFile } from 'node:fs/promises'
+import { mkdir, readFile, writeFile } from 'node:fs/promises'
 import path from 'node:path'
 
 // MusicBrainz asks that clients identify themselves with a contact — a URL is
@@ -159,6 +159,24 @@ async function main() {
   const outDir = path.resolve(import.meta.dirname, '../public/data')
   await mkdir(outDir, { recursive: true })
   const outPath = path.join(outDir, 'catalog.json')
+
+  // Only rewrite when the releases themselves changed. The weekly refresh job
+  // keys off `git diff`, so a fresh timestamp on identical data would produce
+  // an empty commit and a pointless redeploy every week.
+  const next = JSON.stringify(catalog)
+  const previous = await readFile(outPath, 'utf8').catch(() => null)
+  if (previous) {
+    try {
+      const parsed = JSON.parse(previous) as { releases: CatalogEntry[] }
+      if (JSON.stringify(parsed.releases) === next) {
+        console.log(`No change — ${catalog.length} entries already current.`)
+        return
+      }
+    } catch {
+      // Unreadable existing file: fall through and overwrite it.
+    }
+  }
+
   await writeFile(
     outPath,
     JSON.stringify({ generatedAt: new Date().toISOString(), releases: catalog }, null, 1),

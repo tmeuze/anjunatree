@@ -4,6 +4,8 @@ on:
   push:
     branches: [main]
   workflow_dispatch:
+  # Lets the weekly catalogue refresh redeploy without duplicating these steps.
+  workflow_call:
 
 # GITHUB_TOKEN permissions for the Pages deployment.
 permissions:

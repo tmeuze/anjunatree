@@ -6,11 +6,16 @@ import type { CatalogRelease, LabelKey, MapNode } from './types'
 
 export const WORLD = { w: 2600, h: 1200 }
 
-export const LABEL_META: Record<LabelKey, { name: string; color: string; laneY: number }> = {
-  anjunabeats: { name: 'Anjunabeats', color: '#3987e5', laneY: 330 },
-  anjunadeep: { name: 'Anjunadeep', color: '#199e70', laneY: 770 },
-  reflections: { name: 'Anjunachill', color: '#d95926', laneY: 1080 },
+// Colours live in the active theme (src/themes.ts), not here — in the DOM use
+// labelVar(), on the canvas read them off the ThemeColors object.
+export const LABEL_META: Record<LabelKey, { name: string; laneY: number }> = {
+  anjunabeats: { name: 'Anjunabeats', laneY: 330 },
+  anjunadeep: { name: 'Anjunadeep', laneY: 770 },
+  reflections: { name: 'Anjunachill', laneY: 1080 },
 }
+
+/** CSS custom property carrying a label's colour in the current theme. */
+export const labelVar = (lane: LabelKey) => `var(--label-${lane})`
 
 export const LABEL_KEYS = Object.keys(LABEL_META) as LabelKey[]
 
@@ -37,11 +42,17 @@ export interface CatalogLayout {
   timeDomain: [number, number]
 }
 
-export async function loadCatalog(): Promise<CatalogRelease[]> {
+export interface CatalogFile {
+  releases: CatalogRelease[]
+  /** ISO date the weekly refresh last changed the data */
+  generatedAt: string | null
+}
+
+export async function loadCatalog(): Promise<CatalogFile> {
   const res = await fetch(`${import.meta.env.BASE_URL}data/catalog.json`)
-  if (!res.ok) throw new Error(`Failed to load catalog: ${res.status}`)
-  const json = (await res.json()) as { releases: CatalogRelease[] }
-  return json.releases
+  if (!res.ok) throw new Error(`Failed to load catalogue: ${res.status}`)
+  const json = (await res.json()) as { releases: CatalogRelease[]; generatedAt?: string }
+  return { releases: json.releases, generatedAt: json.generatedAt ?? null }
 }
 
 function runSim(nodes: MapNode[], targetY: (n: MapNode) => number, yStrength: number) {

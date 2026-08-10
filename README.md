@@ -1,8 +1,11 @@
 # AnjunaTree
 
-An interactive map of the Anjunabeats / Anjunadeep / Anjunachill catalog —
-every release since 2000 plotted on a zoomable timeline, with 30-second
-previews on click.
+**The Anjuna music catalogue, visualised.** An interactive map of the
+Anjunabeats / Anjunadeep / Anjunachill catalogue — every release since 2000
+plotted on a zoomable timeline, with 30-second previews on click.
+
+An unaffiliated, non-commercial fan project. Not associated with or endorsed by
+Anjunabeats, Anjunadeep, Anjunachill, Involved Group, or any artist.
 
 Two views: **Labels** (one lane per label) and **Spectrum** (releases arranged
 along a curated trance → ambient genre axis), with an animated transition
@@ -58,6 +61,16 @@ npm run ingest
   selection; any view of the map is a link.
 - **Milestones** — a curated set of label landmarks (`src/milestones.ts`)
   drawn on the time axis; labels appear as you zoom in.
+- **Latest** — a changelog-style feed of the newest releases, split into what's
+  out now and what's announced but not released yet (`src/Latest.tsx`).
+- **Themes & accessibility** — four themes named after the music
+  (`src/themes.ts`), four text sizes, high contrast, larger map marks, and
+  reduced motion, all persisted locally (`src/settings.ts`, `src/SettingsPanel.tsx`).
+- **Installable** — a PWA via `vite-plugin-pwa`: the shell *and* the catalogue
+  are precached, so the whole map works offline. Icons are generated
+  dependency-free by `node scripts/make-icons.mjs`.
+- **Fresh by itself** — a scheduled Action re-reads MusicBrainz weekly and
+  redeploys only when the catalogue actually changed.
 - **Colors** — the three label colors (`#3987e5` / `#199e70` / `#d95926`)
   are a CVD-validated categorical set: all pairs pass colorblind-separation
   and 3:1 contrast checks against the app's dark surface. Shape carries the
@@ -76,10 +89,18 @@ subscribers needs credentials only you can create:
 
 **Spotify** (Premium users, Web Playback SDK)
 1. <https://developer.spotify.com/dashboard> → *Create app*.
-2. Redirect URI: `http://127.0.0.1:5173/callback` — Spotify no longer accepts
-   plain-http `localhost`, use the literal loopback IP (and browse the dev
-   site at `127.0.0.1:5173`, not `localhost:5173`, when testing login).
-   Add the production HTTPS URI later.
+2. Redirect URIs — register the **app's own URL**, with the trailing slash and
+   no extra path. A static host has nothing to serve at `/callback`, so
+   `src/spotify.ts` redirects back to the page itself and reads the `?code=`
+   there:
+   - `http://127.0.0.1:5173/` for dev. Spotify no longer accepts plain-http
+     `localhost`, so use the literal loopback IP — and browse the dev site at
+     `127.0.0.1:5173`, not `localhost:5173`, when testing login.
+   - `https://anjunatree.com/` for production (add the
+     `https://<user>.github.io/anjunatree/` form too if you test there first).
+
+   If you already registered a `/callback` URI, either add these alongside it or
+   change `redirectUri()` in `src/spotify.ts` to match what you registered.
 3. Tick *Web API* and *Web Playback SDK*. Copy the **Client ID** into
    `.env.local` as `VITE_SPOTIFY_CLIENT_ID=…` (PKCE flow — no client secret
    anywhere in the app).
@@ -168,9 +189,11 @@ stored in its own dashboard.
 
 ## Roadmap
 
-- [ ] Full-track playback for logged-in listeners: Spotify Web Playback SDK
-      (requires registering a Spotify developer app; Premium-only) and/or
-      Apple MusicKit JS.
+- [ ] Full-track playback for logged-in listeners. Spotify sign-in (PKCE) is
+      implemented in `src/spotify.ts` and surfaced in Settings; the Web
+      Playback SDK (Premium-only) and Apple MusicKit JS are still to come.
+- [ ] Personalised map: light up the listener's saved releases, and export a
+      constellation as a playlist.
 - [ ] Extended-family labels (with the artists' blessing where possible),
       grouped by the parent company's own taxonomy — see
       `src/familyLabels.ts`: *label services* clients of Involved Group
@@ -181,4 +204,3 @@ stored in its own dashboard.
       color rather than one per label).
 - [ ] Replace the curated spectrum with real genre data (MusicBrainz
       genre-tag crawl per release-group).
-- [ ] PWA (installable, offline-browsable map) via `vite-plugin-pwa`.

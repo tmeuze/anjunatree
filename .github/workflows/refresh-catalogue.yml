@@ -1,0 +1,61 @@
+name: refresh-catalogue
+
+# Keeps the map current on its own: re-reads the label discographies from
+# MusicBrainz every Monday and redeploys only if something actually changed.
+# scripts/ingest.ts leaves the file untouched when the releases are identical,
+# so a quiet week produces no commit and no deploy.
+on:
+  schedule:
+    # 06:17 UTC Mondays — off the hour to avoid GitHub's busiest cron slots.
+    - cron: '17 6 * * 1'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: refresh-catalogue
+  cancel-in-progress: false
+
+jobs:
+  refresh:
+    runs-on: ubuntu-latest
+    outputs:
+      changed: ${{ steps.commit.outputs.changed }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+
+      - name: Re-ingest the catalogue from MusicBrainz
+        run: npm run ingest
+        env:
+          ANJUNATREE_CONTACT: https://anjunatree.com
+
+      - name: Commit if the catalogue moved
+        id: commit
+        run: |
+          if git diff --quiet -- public/data/catalog.json; then
+            echo "No catalogue changes this week."
+            echo "changed=false" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          COUNT=$(node -e "console.log(require('./public/data/catalog.json').releases.length)")
+          git config user.name  "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add public/data/catalog.json
+          git commit -m "data-refresh-catalogue-${COUNT}-releases"
+          git push
+          echo "changed=true" >> "$GITHUB_OUTPUT"
+
+  deploy:
+    needs: refresh
+    if: needs.refresh.outputs.changed == 'true'
+    permissions:
+      contents: read
+      pages: write
+      id-token: write
+    uses: ./.github/workflows/deploy.yml

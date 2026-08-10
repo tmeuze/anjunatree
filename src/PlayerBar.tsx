@@ -1,5 +1,5 @@
 import { useEffect, useRef } from 'react'
-import { LABEL_META } from './data'
+import { labelVar } from './data'
 import type { NowPlaying } from './types'
 
 interface Props {
@@ -40,14 +40,14 @@ export default function PlayerBar({
         ) : (
           <span
             className="player-bar-art-placeholder"
-            style={{ background: LABEL_META[node.lane].color }}
+            style={{ background: labelVar(node.lane) }}
           />
         )}
       </button>
       <div className="player-bar-info">
         <div className="player-bar-title">
           {!paused && (
-            <span className="eq" style={{ color: LABEL_META[node.lane].color }} aria-hidden="true">
+            <span className="eq" style={{ color: labelVar(node.lane) }} aria-hidden="true">
               <span />
               <span />
               <span />
