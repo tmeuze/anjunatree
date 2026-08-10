@@ -1,0 +1,22 @@
+<svg data-dc-tpl="531" width="42" height="42" viewBox="0 0 96 96" fill="none" aria-hidden="true">
+    <g data-dc-tpl="532" stroke="oklch(0.72 0.015 255)" stroke-width="1.8" stroke-linecap="round">
+    <line data-dc-tpl="533" x1="10" y1="86" x2="86" y2="86"></line>
+    <line data-dc-tpl="534" x1="26" y1="86" x2="26" y2="91"></line>
+    <line data-dc-tpl="535" x1="48" y1="86" x2="48" y2="91"></line>
+    <line data-dc-tpl="536" x1="70" y1="86" x2="70" y2="91"></line>
+    </g>
+    <line data-dc-tpl="537" x1="48" y1="86" x2="48" y2="58" stroke="oklch(0.24 0.02 255)" stroke-width="4" stroke-linecap="round"></line>
+    <g data-dc-tpl="538" fill="oklch(0.24 0.02 255)">
+    <circle data-dc-tpl="539" cx="34" cy="52" r="3"></circle>
+    <circle data-dc-tpl="540" cx="48" cy="50" r="4"></circle>
+    <circle data-dc-tpl="541" cx="62" cy="52" r="3"></circle>
+    <circle data-dc-tpl="542" cx="26" cy="41" r="2.6"></circle>
+    <circle data-dc-tpl="543" cx="40" cy="40" r="4"></circle>
+    <circle data-dc-tpl="544" cx="56" cy="40" r="3.6"></circle>
+    <circle data-dc-tpl="545" cx="70" cy="41" r="2.6"></circle>
+    <circle data-dc-tpl="546" cx="34" cy="30" r="3"></circle>
+    <circle data-dc-tpl="547" cx="48" cy="29" r="2.6"></circle>
+    <circle data-dc-tpl="548" cx="62" cy="30" r="3.6"></circle>
+    <circle data-dc-tpl="549" cx="48" cy="18" r="5" fill="oklch(0.24 0.02 255)"></circle>
+    </g>
+</svg>
