@@ -16,18 +16,16 @@ import path from 'node:path'
 import {
   ART_SIZE,
   AXIS_LINE,
-  AXIS_STROKE,
   AXIS_Y,
   CANOPY,
   TICKS,
   TICK_BOTTOM,
-  FROND_STROKE,
+  STRUCTURE_STROKE,
   TRUNK,
-  TRUNK_STROKE,
-  frondLines,
+  fanDots,
 } from '../src/brandGeometry.ts'
 
-const FRONDS = frondLines()
+const FAN = fanDots()
 
 // Icons can't follow the app's theme, so they're painted for the dark surface,
 // matching the manifest's theme_color and the "Black Room Boy" default.
@@ -103,16 +101,18 @@ function distToSegment(
 /** Colour of the artboard at (ax, ay), painted in SVG order — later wins. */
 function sampleArt(ax: number, ay: number): number[] {
   let c = BG
-  if (distToSegment(ax, ay, ...AXIS_LINE) <= AXIS_STROKE / 2) c = AXIS
+  const half = STRUCTURE_STROKE / 2
+  // Trunk and timeline are one structure in one colour.
+  if (distToSegment(ax, ay, ...AXIS_LINE) <= half) c = AXIS
   for (const x of TICKS) {
-    if (distToSegment(ax, ay, x, AXIS_Y, x, TICK_BOTTOM) <= AXIS_STROKE / 2) c = AXIS
+    if (distToSegment(ax, ay, x, AXIS_Y, x, TICK_BOTTOM) <= half) c = AXIS
   }
-  if (distToSegment(ax, ay, ...TRUNK) <= TRUNK_STROKE / 2) c = INK
+  if (distToSegment(ax, ay, ...TRUNK) <= half) c = AXIS
   for (const [cx, cy, r] of CANOPY) {
     if (Math.hypot(ax - cx, ay - cy) <= r) c = INK
   }
-  for (const [x1, y1, x2, y2] of FRONDS) {
-    if (distToSegment(ax, ay, x1, y1, x2, y2) <= FROND_STROKE / 2) c = CROWN
+  for (const [cx, cy, r] of FAN) {
+    if (Math.hypot(ax - cx, ay - cy) <= r) c = CROWN
   }
   return c
 }
@@ -175,25 +175,27 @@ const ticks = TICKS.map(
 const canopy = CANOPY.map(([cx, cy, r]) => `    <circle cx="${cx}" cy="${cy}" r="${r}"/>`).join(
   '\n',
 )
-const fronds = FRONDS.map(
-  ([x1, y1, x2, y2]) => `    <line x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}"/>`,
+const fronds = FAN.map(
+  ([cx, cy, r]) => `    <circle cx="${round(cx)}" cy="${round(cy)}" r="${r}"/>`,
 ).join('\n')
+
+function round(n: number): number {
+  return Math.round(n * 100) / 100
+}
 
 writeFileSync(
   path.join(outDir, 'favicon.svg'),
   `<svg xmlns="http://www.w3.org/2000/svg" viewBox="-6 -6 112 112">
   <rect x="-6" y="-6" width="112" height="112" rx="20" fill="${hex(BG)}"/>
-  <g stroke="${hex(AXIS)}" stroke-width="${AXIS_STROKE}" stroke-linecap="round">
+  <g stroke="${hex(AXIS)}" stroke-width="${STRUCTURE_STROKE}" stroke-linecap="round">
     <line x1="${AXIS_LINE[0]}" y1="${AXIS_LINE[1]}" x2="${AXIS_LINE[2]}" y2="${AXIS_LINE[3]}"/>
 ${ticks}
+    <line x1="${TRUNK[0]}" y1="${TRUNK[1]}" x2="${TRUNK[2]}" y2="${TRUNK[3]}"/>
   </g>
-  <line x1="${TRUNK[0]}" y1="${TRUNK[1]}" x2="${TRUNK[2]}" y2="${TRUNK[3]}" stroke="${hex(
-    INK,
-  )}" stroke-width="${TRUNK_STROKE}" stroke-linecap="round"/>
   <g fill="${hex(INK)}">
 ${canopy}
   </g>
-  <g stroke="${hex(CROWN)}" stroke-width="${FROND_STROKE}" stroke-linecap="round">
+  <g fill="${hex(CROWN)}">
 ${fronds}
   </g>
 </svg>

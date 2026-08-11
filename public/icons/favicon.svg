@@ -5,23 +5,46 @@
     <line x1="38.5" y1="92" x2="38.5" y2="100"/>
     <line x1="50" y1="92" x2="50" y2="100"/>
     <line x1="61.5" y1="92" x2="61.5" y2="100"/>
+    <line x1="50" y1="92" x2="50" y2="57"/>
   </g>
-  <line x1="50" y1="92" x2="50" y2="74" stroke="#e6e8ee" stroke-width="3" stroke-linecap="round"/>
   <g fill="#e6e8ee">
-    <circle cx="30" cy="57" r="2.6"/>
-    <circle cx="43" cy="57" r="3.6"/>
-    <circle cx="57" cy="57" r="3.2"/>
-    <circle cx="70" cy="57" r="2.4"/>
-    <circle cx="38" cy="68" r="3"/>
-    <circle cx="50" cy="68" r="3.8"/>
-    <circle cx="62" cy="68" r="2.8"/>
+    <circle cx="32" cy="40" r="2.6"/>
+    <circle cx="44" cy="40" r="3.6"/>
+    <circle cx="56" cy="40" r="3.2"/>
+    <circle cx="68" cy="40" r="2.4"/>
+    <circle cx="39" cy="51" r="3"/>
+    <circle cx="50" cy="51" r="3.8"/>
+    <circle cx="61" cy="51" r="2.8"/>
   </g>
-  <g stroke="#199e70" stroke-width="2.6" stroke-linecap="round">
-    <line x1="50" y1="46" x2="7.34954268992778" y2="28.76809670286805"/>
-    <line x1="50" y1="46" x2="23.615483927851884" y2="8.319005962706377"/>
-    <line x1="50" y1="46" x2="50" y2="0"/>
-    <line x1="50" y1="46" x2="76.38451607214812" y2="8.319005962706377"/>
-    <line x1="50" y1="46" x2="92.65045731007223" y2="28.76809670286805"/>
-    <line x1="7.399999999999999" y1="46" x2="92.6" y2="46"/>
+  <g fill="#199e70">
+    <circle cx="50" cy="30" r="2.4"/>
+    <circle cx="39.47" cy="30" r="2"/>
+    <circle cx="33.68" cy="30" r="1.8"/>
+    <circle cx="28.42" cy="30" r="1.6"/>
+    <circle cx="23.68" cy="30" r="1.4"/>
+    <circle cx="39.35" cy="26.54" r="2"/>
+    <circle cx="33.49" cy="24.64" r="1.8"/>
+    <circle cx="28.16" cy="22.9" r="1.6"/>
+    <circle cx="23.37" cy="21.35" r="1.4"/>
+    <circle cx="43.1" cy="21.17" r="2"/>
+    <circle cx="39.31" cy="16.32" r="1.8"/>
+    <circle cx="35.86" cy="11.91" r="1.6"/>
+    <circle cx="32.76" cy="7.94" r="1.4"/>
+    <circle cx="50" cy="18.8" r="2"/>
+    <circle cx="50" cy="12.64" r="1.8"/>
+    <circle cx="50" cy="7.04" r="1.6"/>
+    <circle cx="50" cy="2" r="1.4"/>
+    <circle cx="56.9" cy="21.17" r="2"/>
+    <circle cx="60.69" cy="16.32" r="1.8"/>
+    <circle cx="64.14" cy="11.91" r="1.6"/>
+    <circle cx="67.24" cy="7.94" r="1.4"/>
+    <circle cx="60.65" cy="26.54" r="2"/>
+    <circle cx="66.51" cy="24.64" r="1.8"/>
+    <circle cx="71.84" cy="22.9" r="1.6"/>
+    <circle cx="76.63" cy="21.35" r="1.4"/>
+    <circle cx="60.53" cy="30" r="2"/>
+    <circle cx="66.32" cy="30" r="1.8"/>
+    <circle cx="71.58" cy="30" r="1.6"/>
+    <circle cx="76.32" cy="30" r="1.4"/>
   </g>
 </svg>
