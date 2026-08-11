@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import { labelVar } from './data'
+import { clearStatus, setStatus } from './status'
 import type { SpotifyState } from './useSpotify'
 import type { NowPlaying } from './types'
 
@@ -62,17 +63,28 @@ export default function PlayerBar({
       audio.removeAttribute('src')
     }
     setMode('resolving')
+    setStatus('track-resolve', 'progress', 'Finding the full track on Spotify…')
     spotify
       .playFull(track?.artistName || node.rel.artist, track?.trackName ?? node.rel.title)
       .then((ok) => {
         if (cancelled) return
-        if (ok) setMode('spotify')
-        else playPreview()
+        clearStatus('track-resolve')
+        if (ok) {
+          setMode('spotify')
+        } else {
+          setStatus('track-fallback', 'info', 'Not on Spotify — playing the preview.')
+          playPreview()
+        }
       })
-      .catch(() => !cancelled && playPreview())
+      .catch(() => {
+        if (cancelled) return
+        clearStatus('track-resolve')
+        playPreview()
+      })
 
     return () => {
       cancelled = true
+      clearStatus('track-resolve')
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [node.rel.id, index, track?.previewUrl, spotify.canPlayFull])

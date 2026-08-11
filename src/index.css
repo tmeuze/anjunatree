@@ -1632,3 +1632,68 @@ body {
     display: none;
   }
 }
+
+/* ---- status corner --------------------------------------------------------
+   One place for progress and failure messages, so what the app is doing never
+   depends on which panel happens to be open. */
+
+.status-stack {
+  position: fixed;
+  left: 12px;
+  bottom: 12px;
+  z-index: 55;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  max-width: min(380px, calc(100vw - 24px));
+  pointer-events: none;
+}
+
+.status-toast {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  padding: 9px 12px;
+  border-radius: 10px;
+  border: 1px solid var(--hairline);
+  background: var(--panel);
+  box-shadow: 0 8px 26px rgba(0, 0, 0, 0.4);
+  font-size: calc(11.5px * var(--font-scale));
+  line-height: 1.45;
+  color: var(--ink);
+  pointer-events: auto;
+}
+
+.status-toast.error {
+  border-color: color-mix(in srgb, var(--label-reflections) 55%, transparent);
+  background: color-mix(in srgb, var(--label-reflections) 14%, transparent);
+}
+
+.status-toast.info {
+  border-color: color-mix(in srgb, var(--label-anjunadeep) 45%, transparent);
+}
+
+.status-text {
+  min-width: 0;
+}
+
+.status-spinner {
+  width: 12px;
+  height: 12px;
+  flex-shrink: 0;
+  border-radius: 50%;
+  border: 2px solid color-mix(in srgb, var(--ink) 25%, transparent);
+  border-top-color: var(--label-anjunadeep);
+  animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* The player bar sits above the toasts, so lift them clear of it. */
+.app:has(.player-bar) .status-stack {
+  bottom: 84px;
+}

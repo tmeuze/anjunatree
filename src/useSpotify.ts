@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
+import { clearStatus, setStatus } from './status'
 import * as spotify from './spotify'
 import type { Profile, Session } from './spotify'
 import { connectPlayer, playUri } from './spotifyPlayer'
@@ -29,6 +30,10 @@ export function useSpotify(): SpotifyState {
   const [connecting, setConnecting] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const playerRef = useRef<ConnectedPlayer | null>(null)
+  // Mirrors playerRef as state: a ref alone would attach the player without
+  // ever re-rendering, so canPlayFull would stay false and playback would
+  // silently never switch away from previews.
+  const [playerReady, setPlayerReady] = useState(false)
 
   const needsReconnect = session ? spotify.needsReconnect(session) : false
   const premium = profile?.product === 'premium'
@@ -49,17 +54,32 @@ export function useSpotify(): SpotifyState {
   }, [session])
 
   // Attach a player once — and only once — the account can actually use one.
+  //
+  // The guard is a ref, not the `connecting` state. Depending on state here
+  // meant setConnecting(true) re-ran this effect, whose cleanup cancelled the
+  // very attempt it had just started: the promise then resolved into a
+  // cancelled closure, setConnecting(false) never ran, and the UI sat on
+  // "connecting" forever. A ref keeps the guard out of the dependency list.
+  const attemptedRef = useRef(false)
   useEffect(() => {
-    if (!session || needsReconnect || !premium || playerRef.current || connecting) return
+    if (!session || needsReconnect || !premium) return
+    if (attemptedRef.current || playerRef.current) return
+    attemptedRef.current = true
+
     let cancelled = false
     setConnecting(true)
     setError(null)
+    setStatus('spotify-player', 'progress', 'Connecting the Spotify player…')
 
     connectPlayer(
       // Always hand the SDK a live token; it outlives the one we started with.
       async () => (await spotify.validSession())?.accessToken ?? null,
       (s) => !cancelled && setPlayback(s),
-      (m) => !cancelled && setError(m),
+      (m) => {
+        if (cancelled) return
+        setError(m)
+        setStatus('spotify-player', 'error', m)
+      },
     )
       .then((p) => {
         if (cancelled) {
@@ -67,26 +87,45 @@ export function useSpotify(): SpotifyState {
           return
         }
         playerRef.current = p
+        setPlayerReady(true)
+        clearStatus('spotify-player')
+        setStatus('spotify-ready', 'info', 'Spotify connected — full tracks enabled.')
       })
       .catch((e: unknown) => {
-        if (!cancelled) setError(e instanceof Error ? e.message : String(e))
+        if (cancelled) return
+        // Firefox drops `encrypted-media` and `autoplay` from the SDK iframe's
+        // allow-list, so the player never becomes ready there. Say so plainly
+        // rather than leaving a generic timeout.
+        const firefox = navigator.userAgent.includes('Firefox')
+        const message = firefox
+          ? 'Firefox can’t run the Spotify player (it blocks the DRM permission the SDK needs). Previews still work — use Chrome, Edge or Safari for full tracks.'
+          : e instanceof Error
+            ? e.message
+            : String(e)
+        setError(message)
+        setStatus('spotify-player', 'error', message)
+        // Let a later reconnect try again rather than latching the failure.
+        attemptedRef.current = false
       })
       .finally(() => !cancelled && setConnecting(false))
 
     return () => {
       cancelled = true
     }
-  }, [session, needsReconnect, premium, connecting])
+  }, [session, needsReconnect, premium])
 
   // Tear the player down on sign-out so it can't keep holding the device.
   useEffect(() => {
     if (session) return
     playerRef.current?.disconnect()
     playerRef.current = null
+    attemptedRef.current = false
+    setPlayerReady(false)
     setPlayback(null)
+    clearStatus('spotify-player')
   }, [session])
 
-  const canPlayFull = Boolean(session && !needsReconnect && premium && playerRef.current)
+  const canPlayFull = Boolean(session && !needsReconnect && premium && playerReady)
 
   const playFull = useCallback(
     async (artist: string, title: string): Promise<boolean> => {
@@ -117,6 +156,9 @@ export function useSpotify(): SpotifyState {
   const disconnect = useCallback(() => {
     playerRef.current?.disconnect()
     playerRef.current = null
+    attemptedRef.current = false
+    setPlayerReady(false)
+    clearStatus('spotify-player')
     spotify.logout()
     setSession(null)
     setProfile(null)

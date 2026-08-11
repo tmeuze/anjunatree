@@ -11,6 +11,7 @@ import PlayerBar from './PlayerBar'
 import ReleasePanel, { VARIOUS_ARTISTS_MBID } from './ReleasePanel'
 import SettingsPanel from './SettingsPanel'
 import ShapeLegend from './ShapeLegend'
+import StatusToasts from './StatusToasts'
 import { LABEL_KEYS, LABEL_META, layoutCatalog, loadCatalog, labelVar } from './data'
 import type { CatalogLayout } from './data'
 import { applySettings, loadSettings, saveSettings, scaleOf } from './settings'
@@ -539,6 +540,7 @@ export default function App() {
           }}
         />
       )}
+      <StatusToasts />
       <UpdatePrompt />
       <InstallPrompt />
     </div>
