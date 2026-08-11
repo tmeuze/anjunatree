@@ -1648,10 +1648,8 @@ body {
 }
 
 @media (max-width: 620px) {
-  .wordmark {
-    display: none;
-  }
-
+  /* The wordmark stays visible at every width — only the tagline, count and
+     button text shed earlier in the ladder. */
   .view-toggle button {
     padding: 5px 9px;
   }
@@ -1826,11 +1824,6 @@ body {
   }
 }
 
-@media (max-width: 620px) {
-  .wordmark {
-    display: none;
-  }
-}
 
 /* ---- status corner --------------------------------------------------------
    One place for progress and failure messages, so what the app is doing never

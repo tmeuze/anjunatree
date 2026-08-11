@@ -7,7 +7,16 @@
 // automatically: the structure (axis + trunk) fades dim-to-solid ink, the
 // canopy sweeps across all three label colours — it's the catalogue in
 // miniature — and the fan runs from Anjunadeep into the theme's accent.
+//
+// The gradient stops are resolved and applied in JS (setAttribute), not via
+// SVG `<stop style={{ stopColor: 'var(...)' }}>`. That combination — a CSS
+// custom property inside an inline style on an SVG <stop> — is exactly the
+// case WebKit doesn't reliably repaint: it was rendering the trunk and
+// timeline as flat black in Safari, correct only in Chromium/Firefox. Reading
+// the resolved custom-property values with getComputedStyle and setting
+// `stop-color` as a plain attribute sidesteps the whole class of bug.
 
+import { useEffect, useRef } from 'react'
 import {
   AXIS_LINE,
   AXIS_STROKE,
@@ -25,17 +34,55 @@ import {
 interface MarkProps {
   size?: number
   className?: string
-  /** Unique per rendered instance — SVG gradient ids are global to the document. */
-  gradientId?: string
 }
 
 let instanceCounter = 0
 
-export function TreeMark({ size = 26, className, gradientId }: MarkProps) {
-  const uid = gradientId ?? `tm${++instanceCounter}`
+const VARS = {
+  structure: ['--mark-structure-1', '--mark-structure-2'],
+  canopy: ['--mark-canopy-1', '--mark-canopy-2', '--mark-canopy-3'],
+  fan: ['--mark-fan-1', '--mark-fan-2'],
+} as const
+
+const FALLBACK: Record<string, string> = {
+  '--mark-structure-1': '#898781',
+  '--mark-structure-2': '#e6e8ee',
+  '--mark-canopy-1': '#3987e5',
+  '--mark-canopy-2': '#199e70',
+  '--mark-canopy-3': '#d95926',
+  '--mark-fan-1': '#199e70',
+  '--mark-fan-2': '#3987e5',
+}
+
+export function TreeMark({ size = 26, className }: MarkProps) {
+  const idRef = useRef(`tm${++instanceCounter}`)
+  const uid = idRef.current
+  const svgRef = useRef<SVGSVGElement>(null)
+
+  useEffect(() => {
+    const svg = svgRef.current
+    if (!svg) return
+
+    const sync = () => {
+      const computed = getComputedStyle(document.documentElement)
+      for (const group of Object.values(VARS)) {
+        for (const name of group) {
+          const stop = svg.querySelector(`stop[data-var="${name}"]`)
+          if (!stop) continue
+          const value = computed.getPropertyValue(name).trim() || FALLBACK[name]
+          stop.setAttribute('stop-color', value)
+        }
+      }
+    }
+
+    sync()
+    window.addEventListener('anjunatree:theme-changed', sync)
+    return () => window.removeEventListener('anjunatree:theme-changed', sync)
+  }, [])
 
   return (
     <svg
+      ref={svgRef}
       width={size}
       height={size}
       viewBox={`0 0 ${ART_SIZE} ${ART_SIZE}`}
@@ -46,17 +93,17 @@ export function TreeMark({ size = 26, className, gradientId }: MarkProps) {
     >
       <defs>
         <linearGradient id={`${uid}-structure`} x1="0" y1="1" x2="0" y2="0">
-          <stop offset="0" style={{ stopColor: 'var(--mark-structure-1, #898781)' }} />
-          <stop offset="1" style={{ stopColor: 'var(--mark-structure-2, #e6e8ee)' }} />
+          <stop offset="0" data-var="--mark-structure-1" stopColor={FALLBACK['--mark-structure-1']} />
+          <stop offset="1" data-var="--mark-structure-2" stopColor={FALLBACK['--mark-structure-2']} />
         </linearGradient>
         <linearGradient id={`${uid}-canopy`} x1="0" y1="0" x2="1" y2="0">
-          <stop offset="0" style={{ stopColor: 'var(--mark-canopy-1, #3987e5)' }} />
-          <stop offset="0.5" style={{ stopColor: 'var(--mark-canopy-2, #199e70)' }} />
-          <stop offset="1" style={{ stopColor: 'var(--mark-canopy-3, #d95926)' }} />
+          <stop offset="0" data-var="--mark-canopy-1" stopColor={FALLBACK['--mark-canopy-1']} />
+          <stop offset="0.5" data-var="--mark-canopy-2" stopColor={FALLBACK['--mark-canopy-2']} />
+          <stop offset="1" data-var="--mark-canopy-3" stopColor={FALLBACK['--mark-canopy-3']} />
         </linearGradient>
         <linearGradient id={`${uid}-fan`} x1="0" y1="1" x2="0" y2="0">
-          <stop offset="0" style={{ stopColor: 'var(--mark-fan-1, #199e70)' }} />
-          <stop offset="1" style={{ stopColor: 'var(--mark-fan-2, #3987e5)' }} />
+          <stop offset="0" data-var="--mark-fan-1" stopColor={FALLBACK['--mark-fan-1']} />
+          <stop offset="1" data-var="--mark-fan-2" stopColor={FALLBACK['--mark-fan-2']} />
         </linearGradient>
       </defs>
 

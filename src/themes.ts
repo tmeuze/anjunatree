@@ -172,4 +172,10 @@ export function applyTheme(theme: Theme): void {
 
   r.dataset.themeMode = theme.mode
   r.style.colorScheme = theme.mode
+
+  // <TreeMark>'s gradients resolve these vars in JS rather than via SVG
+  // `stop-color: var(...)` — WebKit doesn't reliably repaint that combination,
+  // which was rendering the trunk and timeline as flat black in Safari. See
+  // Brand.tsx.
+  window.dispatchEvent(new Event('anjunatree:theme-changed'))
 }
