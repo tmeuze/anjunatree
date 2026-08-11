@@ -17,6 +17,7 @@ import { applySettings, loadSettings, saveSettings, scaleOf } from './settings'
 import type { Settings } from './settings'
 import { applyTheme, getTheme } from './themes'
 import * as spotify from './spotify'
+import { useSpotify } from './useSpotify'
 import { LABEL_SITE_URL, REPO_URL } from './constants'
 import type { LabelKey, MapNode, NowPlaying, ViewKey } from './types'
 
@@ -63,6 +64,7 @@ export default function App() {
   const [showLatest, setShowLatest] = useState(false)
   const [generatedAt, setGeneratedAt] = useState<string | null>(null)
   const [authError, setAuthError] = useState<string | null>(null)
+  const spotifyState = useSpotify()
 
   const theme = useMemo(() => getTheme(settings.theme), [settings.theme])
 
@@ -77,10 +79,18 @@ export default function App() {
   // failure here is nearly always a redirect-URI mismatch, so surface it in
   // Settings rather than silently doing nothing.
   useEffect(() => {
-    spotify.completeLoginFromRedirect().catch((e: unknown) => {
-      setAuthError(e instanceof Error ? e.message : String(e))
-      setShowSettings(true)
-    })
+    spotify
+      .completeLoginFromRedirect()
+      .then((s) => {
+        // A fresh sign-in has to reach the hook, or the player never attaches
+        // until the next reload.
+        if (s) spotifyState.refresh()
+      })
+      .catch((e: unknown) => {
+        setAuthError(e instanceof Error ? e.message : String(e))
+        setShowSettings(true)
+      })
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
   // Selecting a release lights up its first credited artist's constellation.
@@ -490,6 +500,7 @@ export default function App() {
         <PlayerBar
           nowPlaying={nowPlaying}
           paused={playerPaused}
+          spotify={spotifyState}
           onPausedChange={setPlayerPaused}
           onEnded={handleTrackEnded}
           onJumpTo={() => selectNode(nowPlaying.node)}
@@ -520,6 +531,7 @@ export default function App() {
         <SettingsPanel
           settings={settings}
           onChange={setSettings}
+          spotify={spotifyState}
           authError={authError}
           onClose={() => {
             setShowSettings(false)

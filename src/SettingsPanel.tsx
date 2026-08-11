@@ -1,14 +1,14 @@
-import { useEffect, useState } from 'react'
 import { FONT_SCALES } from './settings'
 import type { Settings } from './settings'
 import { THEMES } from './themes'
 import type { ThemeId } from './themes'
 import * as spotify from './spotify'
-import type { Profile } from './spotify'
+import type { SpotifyState } from './useSpotify'
 
 interface Props {
   settings: Settings
   onChange: (s: Settings) => void
+  spotify: SpotifyState
   /** Message from a failed sign-in redirect, if this load came back from one. */
   authError: string | null
   onClose: () => void
@@ -36,22 +36,14 @@ function Toggle({
   )
 }
 
-export default function SettingsPanel({ settings, onChange, authError, onClose }: Props) {
-  const [session, setSession] = useState(spotify.loadSession())
-  const [profile, setProfile] = useState<Profile | null>(null)
+export default function SettingsPanel({
+  settings,
+  onChange,
+  spotify: sp,
+  authError,
+  onClose,
+}: Props) {
   const configured = spotify.isConfigured()
-
-  useEffect(() => {
-    let alive = true
-    if (!session) {
-      setProfile(null)
-      return
-    }
-    spotify.getProfile(session).then((p) => alive && setProfile(p))
-    return () => {
-      alive = false
-    }
-  }, [session])
 
   const set = <K extends keyof Settings>(key: K, value: Settings[K]) =>
     onChange({ ...settings, [key]: value })
@@ -145,34 +137,58 @@ export default function SettingsPanel({ settings, onChange, authError, onClose }
 
           <section>
             <h3>Spotify</h3>
-            {session ? (
+            {sp.session ? (
               <>
                 <p className="set-hint">
-                  Connected{profile ? ` as ${profile.displayName}` : ''}
-                  {profile?.product === 'premium' ? ' · Premium' : ''}.
+                  Connected{sp.profile ? ` as ${sp.profile.displayName}` : ''}
+                  {sp.profile?.product ? ` · ${sp.profile.product}` : ''}.
                 </p>
-                <button
-                  className="set-button"
-                  onClick={() => {
-                    spotify.logout()
-                    setSession(null)
-                  }}
-                >
-                  Disconnect Spotify
-                </button>
+
+                {sp.needsReconnect ? (
+                  <p className="set-error">
+                    This sign-in predates full-track playback. Reconnect once to grant
+                    the playback permission — nothing else changes.
+                  </p>
+                ) : sp.profile && sp.profile.product !== 'premium' ? (
+                  <p className="set-hint">
+                    Spotify only allows other apps to stream full tracks for Premium
+                    accounts, so playback stays on 30-second previews. Everything else
+                    works exactly the same.
+                  </p>
+                ) : sp.connecting ? (
+                  <p className="set-hint">Starting the Spotify player…</p>
+                ) : sp.canPlayFull ? (
+                  <p className="set-hint">
+                    <strong>Full-track playback is on.</strong> Releases now play in
+                    full through Spotify; anything Spotify doesn&apos;t carry falls back
+                    to a preview automatically.
+                  </p>
+                ) : null}
+
+                {sp.error && <p className="set-error">{sp.error}</p>}
+
+                <div className="set-buttons">
+                  {sp.needsReconnect && (
+                    <button
+                      className="set-button primary"
+                      onClick={() => spotify.beginLogin().catch(() => {})}
+                    >
+                      Reconnect Spotify
+                    </button>
+                  )}
+                  <button className="set-button" onClick={sp.disconnect}>
+                    Disconnect Spotify
+                  </button>
+                </div>
               </>
             ) : (
               <>
                 <p className="set-hint">
                   AnjunaTree works fully without an account — every release plays a
-                  30-second preview. Connecting Spotify is how the map gets personal:
-                </p>
-                <p className="set-hint">
-                  Signing in today links your account and confirms your plan. The
-                  features it unlocks are still being built:
+                  30-second preview. Connecting Spotify Premium plays them in full:
                 </p>
                 <ul className="set-list">
-                  <li>Full-length tracks instead of previews (needs Premium) — in progress</li>
+                  <li>Full-length tracks instead of previews (needs Premium)</li>
                   <li>Your saved releases lit up across the timeline — planned</li>
                   <li>Turn a constellation into a playlist — planned</li>
                 </ul>

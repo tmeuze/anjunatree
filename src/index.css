@@ -1553,3 +1553,82 @@ body {
     width: 380px;
   }
 }
+
+/* ---- playback source + Spotify transport --------------------------------- */
+
+.source-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 1px 7px;
+  border-radius: 999px;
+  border: 1px solid var(--hairline);
+  font-size: 0.94em;
+}
+
+.source-badge.full {
+  border-color: color-mix(in srgb, var(--label-anjunadeep) 55%, transparent);
+  background: color-mix(in srgb, var(--label-anjunadeep) 16%, transparent);
+  color: var(--ink);
+}
+
+.spotify-transport {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-shrink: 0;
+  width: 300px;
+}
+
+.transport-button {
+  background: var(--panel);
+  border: 1px solid var(--hairline);
+  border-radius: 50%;
+  width: 32px;
+  height: 32px;
+  flex-shrink: 0;
+  color: var(--ink);
+  font-size: calc(11px * var(--font-scale));
+  cursor: pointer;
+  line-height: 1;
+}
+
+.transport-time {
+  font-size: calc(11px * var(--font-scale));
+  color: var(--ink-secondary);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.transport-track {
+  flex: 1;
+  height: 4px;
+  border-radius: 2px;
+  background: color-mix(in srgb, var(--ink) 18%, transparent);
+  overflow: hidden;
+}
+
+.transport-fill {
+  display: block;
+  height: 100%;
+  border-radius: 2px;
+  background: var(--label-anjunadeep);
+  transition: width 0.3s linear;
+}
+
+.set-buttons {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 4px;
+}
+
+@media (max-width: 900px) {
+  .spotify-transport {
+    width: 180px;
+  }
+
+  .transport-time {
+    display: none;
+  }
+}

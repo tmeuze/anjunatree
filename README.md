@@ -44,6 +44,12 @@ npm run ingest
   (Album > EP > Single), packed with a one-shot d3 force simulation
   (`src/data.ts`). Zoom/pan via d3-zoom, hover hit-testing via d3-quadtree,
   double-click resets the view.
+- **Playback** — signed out, or on a free account, every release plays a
+  30-second iTunes preview. Connect Spotify Premium and the same rows play in
+  full through the Web Playback SDK, with automatic fallback to the preview
+  when Spotify doesn't carry a track. The SDK script is the app's only
+  third-party code and it is loaded **only after** a listener connects their
+  account — a visitor who never signs in fetches nothing from Spotify.
 - **Previews & track lists** — clicking a release looks it up on the iTunes
   Search API (`src/itunes.ts`, no auth needed), then pulls the collection's
   full track list via `/lookup?entity=song` — every track with its own
@@ -195,9 +201,10 @@ stored in its own dashboard.
 
 ## Roadmap
 
-- [ ] Full-track playback for logged-in listeners. Spotify sign-in (PKCE) is
-      implemented in `src/spotify.ts` and surfaced in Settings; the Web
-      Playback SDK (Premium-only) and Apple MusicKit JS are still to come.
+- [x] Full-track playback via the Spotify Web Playback SDK for Premium
+      listeners (`src/spotifyPlayer.ts`, `src/useSpotify.ts`). Falls back to
+      previews for free accounts and for anything Spotify doesn't carry.
+- [ ] Apple MusicKit JS as a second full-playback provider.
 - [ ] Personalised map: light up the listener's saved releases, and export a
       constellation as a playlist.
 - [ ] Extended-family labels (with the artists' blessing where possible),

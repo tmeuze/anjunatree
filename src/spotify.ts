@@ -17,15 +17,35 @@ const STORE = 'anjunatree:spotify'
 const VERIFIER_KEY = 'anjunatree:spotify:verifier'
 const STATE_KEY = 'anjunatree:spotify:state'
 
-// Read scopes only, for now. Full-track playback later adds streaming +
-// user-read-playback-state; saving releases would add user-library-modify.
-const SCOPES = ['user-read-email', 'user-read-private']
+// `streaming` is what the Web Playback SDK requires, and it is Premium-only —
+// Spotify will grant the scope to a free account but refuse to create a player
+// for it, so the app checks `product` too and falls back to previews.
+// Adding scopes invalidates tokens issued before them, hence needsReconnect().
+const SCOPES = [
+  'user-read-email',
+  'user-read-private',
+  'streaming',
+  'user-read-playback-state',
+  'user-modify-playback-state',
+]
+
+const PLAYBACK_SCOPE = 'streaming'
 
 export interface Session {
   accessToken: string
   refreshToken: string | null
   expiresAt: number
+  /** Scopes Spotify actually granted, so stale tokens can be spotted. */
+  scope: string
 }
+
+/**
+ * True when the stored session predates the playback scopes. The token still
+ * works for reading, so this isn't an error — the user just has to reconnect
+ * once before full tracks can play.
+ */
+export const needsReconnect = (s: Session): boolean =>
+  !s.scope.split(' ').includes(PLAYBACK_SCOPE)
 
 export interface Profile {
   displayName: string
@@ -58,7 +78,9 @@ export function loadSession(): Session | null {
     const raw = localStorage.getItem(STORE)
     if (!raw) return null
     const s = JSON.parse(raw) as Session
-    return s.accessToken ? s : null
+    if (!s.accessToken) return null
+    // Sessions stored before scopes were tracked have no `scope` field.
+    return { ...s, scope: s.scope ?? '' }
   } catch {
     return null
   }
@@ -156,11 +178,13 @@ export async function completeLoginFromRedirect(): Promise<Session | null> {
     access_token: string
     refresh_token?: string
     expires_in: number
+    scope?: string
   }
   const session: Session = {
     accessToken: json.access_token,
     refreshToken: json.refresh_token ?? null,
     expiresAt: Date.now() + json.expires_in * 1000,
+    scope: json.scope ?? '',
   }
   storeSession(session)
   return session
@@ -182,11 +206,13 @@ export async function refresh(session: Session): Promise<Session | null> {
     access_token: string
     refresh_token?: string
     expires_in: number
+    scope?: string
   }
   const next: Session = {
     accessToken: json.access_token,
     refreshToken: json.refresh_token ?? session.refreshToken,
     expiresAt: Date.now() + json.expires_in * 1000,
+    scope: json.scope ?? session.scope,
   }
   storeSession(next)
   return next
@@ -213,4 +239,65 @@ export async function getProfile(session: Session): Promise<Profile | null> {
 
 export function logout(): void {
   storeSession(null)
+}
+
+
+const norm = (v: string) =>
+  v
+    .toLowerCase()
+    .normalize('NFKD')
+    .replace(/\(.*?\)|\[.*?\]/g, ' ')
+    .replace(/[^\p{Letter}\p{Number} ]+/gu, ' ')
+    .replace(/\s+/g, ' ')
+    .trim()
+
+interface SpotifyTrack {
+  uri: string
+  name: string
+  duration_ms: number
+  artists: { name: string }[]
+}
+
+/**
+ * Find the Spotify track that matches a catalogue track. Scored rather than
+ * taken first-hit, because a bare search happily returns covers, live cuts and
+ * unrelated songs that merely share a word with the title.
+ */
+export async function findTrackUri(
+  session: Session,
+  artist: string,
+  title: string,
+): Promise<{ uri: string; durationMs: number } | null> {
+  const params = new URLSearchParams({
+    q: `${artist} ${title}`,
+    type: 'track',
+    limit: '10',
+  })
+  const res = await fetch(`${API}/search?${params}`, {
+    headers: { Authorization: `Bearer ${session.accessToken}` },
+  })
+  if (!res.ok) return null
+  const json = (await res.json()) as { tracks?: { items: SpotifyTrack[] } }
+  const items = json.tracks?.items ?? []
+  if (!items.length) return null
+
+  const wantTitle = norm(title)
+  const wantArtist = norm(artist)
+  let best: { track: SpotifyTrack; score: number } | null = null
+  for (const t of items) {
+    const gotTitle = norm(t.name)
+    const gotArtists = t.artists.map((a) => norm(a.name)).join(' ')
+    let score = 0
+    if (gotTitle === wantTitle) score += 6
+    else if (gotTitle.startsWith(wantTitle) || wantTitle.startsWith(gotTitle)) score += 4
+    else continue // a title that doesn't even prefix-match isn't the track
+    // Require some artist agreement, so covers don't win.
+    const artistWords = wantArtist.split(' ').filter((w) => w.length > 2)
+    const hits = artistWords.filter((w) => gotArtists.includes(w)).length
+    if (!hits) continue
+    score += (hits / Math.max(1, artistWords.length)) * 4
+    if (!best || score > best.score) best = { track: t, score }
+  }
+  if (!best) return null
+  return { uri: best.track.uri, durationMs: best.track.duration_ms }
 }
