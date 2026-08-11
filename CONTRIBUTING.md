@@ -41,6 +41,7 @@ Every piece of editable content lives in one obvious file. Edit, check it with
 | App name, icons, install behaviour | `vite.config.ts` (manifest) | Icons come from `scripts/make-icons.ts` — re-run it after a colour change. |
 | Logo and wordmark | `src/brandGeometry.ts` + `src/Brand.tsx` | Geometry lives in `brandGeometry.ts` (transcribed from `brand/brandmark/at-palm-fan.svg`) and is shared with the icon rasteriser — edit geometry there, not in the component. Colours are theme-derived gradients, never hardcoded. The wordmark is live text in Jost small caps. |
 | Favicon / PWA icons | `scripts/make-icons.ts` | Redraws the same tree geometry as `Brand.tsx`; re-run `node scripts/make-icons.ts` and commit the output. |
+| Social preview card (`og:image`) | `scripts/make-social-card.ts` | Shares its PNG encoder with the icon generator (`scripts/lib/png.ts`); re-run `npm run social-card` after any brand/colour change and commit `public/social-card.png`. |
 | Weekly refresh timing | `.github/workflows/refresh-catalogue.yml` | The `cron` line. |
 
 ### Text sizes

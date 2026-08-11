@@ -3,6 +3,7 @@ import { findRelease, lookupTracks } from './itunes'
 import type { ReleaseMatch } from './itunes'
 import { LABEL_META, labelVar } from './data'
 import { SHAPE_LABEL } from './shapes'
+import { REPO_URL } from './constants'
 import type { AlbumTrack, MapNode, NowPlaying } from './types'
 
 export const VARIOUS_ARTISTS_MBID = '89ad4ac3-39f7-470e-963a-56509c546377'
@@ -130,6 +131,31 @@ export default function ReleasePanel({
   const isCurrentRelease = nowPlaying?.node.rel.id === rel.id
   const art = match.status === 'ready' ? match.match.artworkUrl : ''
 
+  // Spectrum placement is curated, not measured (src/spectrum.ts) — this
+  // just deep-links to a pre-filled GitHub Discussion so pushback arrives in
+  // a shape the app (or a maintainer) can actually parse. No dedupe check:
+  // that would need authenticated reads against GitHub's Discussions API,
+  // which a static site can't do without a backend.
+  const genrePlacementUrl = useMemo(() => {
+    const pct = Math.round(node.spectrum * 100)
+    const labelName = LABEL_META[node.lane].name
+    const title = `Genre placement: ${rel.artist} — ${rel.title}`
+    const body = [
+      'Suggesting a different spectrum placement for this release.',
+      '',
+      `Currently placed at: ${pct}% (0% = uplifting trance, 100% = ambient) on ${labelName}`,
+      `Release: https://anjunatree.com/#r=${rel.id}`,
+      '',
+      'Where should it sit, and why? (a rough %, or just "more trance" / "more ambient" is fine)',
+    ].join('\n')
+    const params = new URLSearchParams({
+      category: 'genre-placement',
+      title,
+      body,
+    })
+    return `${REPO_URL}/discussions/new?${params.toString()}`
+  }, [node.spectrum, node.lane, rel])
+
   return (
     <aside className="panel">
       <button className="panel-close" onClick={onClose} aria-label="Close panel">
@@ -170,6 +196,13 @@ export default function ReleasePanel({
             {a.name}
           </button>
         ))}
+      </div>
+
+      <div className="panel-section-label">Genre placement</div>
+      <div className="panel-genre-vote">
+        <a className="set-button" href={genrePlacementUrl} target="_blank" rel="noreferrer">
+          Suggest a genre placement
+        </a>
       </div>
 
       <div className="panel-section-label">

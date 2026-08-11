@@ -501,6 +501,15 @@ body {
   cursor: default;
 }
 
+.panel-genre-vote {
+  padding: 0 18px 4px;
+}
+
+.panel-genre-vote .set-button {
+  display: inline-block;
+  text-decoration: none;
+}
+
 .panel-tracks {
   flex: 1;
   overflow-y: auto;

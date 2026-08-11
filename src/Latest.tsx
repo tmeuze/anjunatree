@@ -63,9 +63,9 @@ export default function Latest({ layout, generatedAt, selectedId, onSelect, onCl
   )
 
   return (
-    <aside className="latest" aria-label="Latest releases">
+    <aside className="latest" aria-label="Release Tracker">
       <div className="settings-head">
-        <h2>Latest releases</h2>
+        <h2>Release Tracker</h2>
         <button className="panel-close settings-close" onClick={onClose} aria-label="Close">
           ✕
         </button>

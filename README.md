@@ -61,14 +61,14 @@ npm run ingest
 - **Constellations** — selecting a release lights up every release sharing
   its artist's MusicBrainz ID, connected chronologically; chips in the panel
   switch between credited artists (Various Artists is deliberately inert).
-- **Radio** — plays through the map chronologically (or walks the current
+- **On Rotation** — plays through the map chronologically (or walks the current
   constellation), one preview per release, skipping unmatched ones.
 - **Shareable URLs** — the hash always encodes view, search, filters, and
   selection; any view of the map is a link.
 - **Milestones** — a curated set of label landmarks (`src/milestones.ts`)
   drawn on the time axis; labels appear as you zoom in.
-- **Latest** — a changelog-style feed of the newest releases, split into what's
-  out now and what's announced but not released yet (`src/Latest.tsx`).
+- **Release Tracker** — a changelog-style feed of the newest releases, split into
+  what's out now and what's announced but not released yet (`src/Latest.tsx`).
 - **Themes & accessibility** — four themes named after the music
   (`src/themes.ts`), four text sizes, high contrast, larger map marks, and
   reduced motion, all persisted locally (`src/settings.ts`, `src/SettingsPanel.tsx`).

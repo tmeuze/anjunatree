@@ -368,7 +368,7 @@ export default function App() {
             <span className="menu-icon" aria-hidden="true">
               {radio ? '■' : '▸'}
             </span>
-            <span className="menu-label">Radio</span>
+            <span className="menu-label">On Rotation</span>
           </button>
 
           <button
@@ -380,7 +380,7 @@ export default function App() {
             <span className="menu-icon" aria-hidden="true">
               ✦
             </span>
-            <span className="menu-label">Latest</span>
+            <span className="menu-label">Release Tracker</span>
           </button>
 
           <div className="desktop-only">
@@ -429,7 +429,7 @@ export default function App() {
                       close()
                     }}
                   >
-                    {radio ? 'Stop radio' : 'Start radio'}
+                    {radio ? 'Stop On Rotation' : 'Start On Rotation'}
                   </button>
                   <button
                     className={`menu-item${showLatest ? ' on' : ''}`}
@@ -438,7 +438,7 @@ export default function App() {
                       close()
                     }}
                   >
-                    Latest releases
+                    Release Tracker
                   </button>
 
                   <div className="menu-heading">More</div>

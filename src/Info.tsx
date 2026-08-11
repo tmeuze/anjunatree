@@ -106,7 +106,7 @@ export default function Info({
                       <strong>Scroll</strong> to zoom, <strong>drag</strong> to pan.
                     </li>
                     <li>
-                      <strong>Radio</strong>, in the header, plays through the map for you.
+                      <strong>On Rotation</strong>, in the header, plays through the map for you.
                     </li>
                   </ul>
                   <div className="info-cta-row">
