@@ -31,17 +31,21 @@ export default function Info({ tab, onOpen, onClose }: Props) {
 
   return (
     <>
-      <div className="info-menu" ref={menuRef}>
+      <div className="menu" ref={menuRef}>
         <button
-          className="info-button"
+          className={`menu-trigger${menuOpen ? ' on' : ''}`}
           aria-haspopup="menu"
           aria-expanded={menuOpen}
+          title="What this is, how to use it, about the project"
           onClick={() => setMenuOpen((v) => !v)}
         >
-          ? <span className="info-button-label">Info</span>
+          <span className="menu-icon" aria-hidden="true">
+            ?
+          </span>
+          <span className="menu-label">About</span>
         </button>
         {menuOpen && (
-          <div className="info-dropdown" role="menu">
+          <div className="menu-pop right" role="menu">
             {(Object.keys(TAB_TITLE) as InfoTab[]).map((t) => (
               <button
                 key={t}

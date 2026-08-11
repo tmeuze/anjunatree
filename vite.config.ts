@@ -51,16 +51,11 @@ export default defineConfig({
               cacheableResponse: { statuses: [0, 200] },
             },
           },
-          {
-            // Search results change rarely; serve fast, refresh in background.
-            urlPattern: /^https:\/\/itunes\.apple\.com\/.*/i,
-            handler: 'StaleWhileRevalidate',
-            options: {
-              cacheName: 'itunes-api',
-              expiration: { maxEntries: 400, maxAgeSeconds: 60 * 60 * 24 * 7 },
-              cacheableResponse: { statuses: [0, 200] },
-            },
-          },
+          // The iTunes *API* is deliberately NOT cached here. Its responses are
+          // origin-specific but carry no `Vary: Origin`, so a cached copy can
+          // be replayed against the wrong origin and fail CORS; and caching an
+          // opaque (status 0) response would leave an unreadable body behind
+          // for good. src/itunes.ts fetches it with `cache: 'no-store'`.
         ],
       },
     }),

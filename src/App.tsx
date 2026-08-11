@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { TreeMark, Wordmark } from './Brand'
+import Menu from './Menu'
 import Info from './Info'
 import type { InfoTab } from './Info'
 import InstallPrompt from './InstallPrompt'
@@ -60,6 +61,7 @@ export default function App() {
   const [showSettings, setShowSettings] = useState(false)
   const [showLatest, setShowLatest] = useState(false)
   const [generatedAt, setGeneratedAt] = useState<string | null>(null)
+  const [authError, setAuthError] = useState<string | null>(null)
 
   const theme = useMemo(() => getTheme(settings.theme), [settings.theme])
 
@@ -70,9 +72,14 @@ export default function App() {
     saveSettings(settings)
   }, [theme, settings])
 
-  // If we came back from the Spotify consent screen, finish the exchange.
+  // If we came back from the Spotify consent screen, finish the exchange. A
+  // failure here is nearly always a redirect-URI mismatch, so surface it in
+  // Settings rather than silently doing nothing.
   useEffect(() => {
-    spotify.completeLoginFromRedirect().catch(() => {})
+    spotify.completeLoginFromRedirect().catch((e: unknown) => {
+      setAuthError(e instanceof Error ? e.message : String(e))
+      setShowSettings(true)
+    })
   }, [])
 
   // Selecting a release lights up its first credited artist's constellation.
@@ -227,7 +234,7 @@ export default function App() {
     <div className="app">
       <header className="header">
         <div className="brand">
-          <TreeMark className="brand-mark" size={30} />
+          <TreeMark className="brand-mark" size={28} />
           <h1>
             <Wordmark />
           </h1>
@@ -239,6 +246,7 @@ export default function App() {
             music catalogue, visualised.
           </span>
         </div>
+
         <input
           className="search"
           type="search"
@@ -246,60 +254,175 @@ export default function App() {
           value={query}
           onChange={(e) => setQuery(e.target.value)}
         />
-        <div className="view-toggle" role="tablist" aria-label="Map view">
-          <button
-            role="tab"
-            aria-selected={view === 'labels'}
-            className={view === 'labels' ? 'on' : ''}
-            onClick={() => setView('labels')}
-          >
-            Labels
-          </button>
-          <button
-            role="tab"
-            aria-selected={view === 'spectrum'}
-            className={view === 'spectrum' ? 'on' : ''}
-            onClick={() => setView('spectrum')}
-          >
-            Spectrum
-          </button>
-        </div>
-        <button
-          className={`radio-button${radio ? ' on' : ''}`}
-          onClick={toggleRadio}
-          title="Play through the map, one preview at a time"
-        >
-          {radio ? '■' : '▸'} Radio
-        </button>
-        <button
-          className={`info-button${showLatest ? ' on' : ''}`}
-          onClick={() => setShowLatest((v) => !v)}
-          aria-pressed={showLatest}
-          title="What's new on the labels"
-        >
-          ✦ Latest
-        </button>
-        <div className="legend">
-          {LABEL_KEYS.map((key) => (
+
+        <div className="header-controls">
+          <div className="view-toggle" role="tablist" aria-label="Map view">
             <button
-              key={key}
-              className={`legend-chip${enabled.has(key) ? '' : ' off'}`}
-              onClick={() => toggleLabel(key)}
-              aria-pressed={enabled.has(key)}
+              role="tab"
+              aria-selected={view === 'labels'}
+              className={view === 'labels' ? 'on' : ''}
+              onClick={() => setView('labels')}
             >
-              <span className="legend-dot" style={{ background: labelVar(key) }} />
-              {LABEL_META[key].name}
+              Labels
             </button>
-          ))}
+            <button
+              role="tab"
+              aria-selected={view === 'spectrum'}
+              className={view === 'spectrum' ? 'on' : ''}
+              onClick={() => setView('spectrum')}
+            >
+              Spectrum
+            </button>
+          </div>
+
+          <button
+            className={`menu-trigger${radio ? ' on accent' : ''}`}
+            onClick={toggleRadio}
+            title="Play through the map, one preview at a time"
+          >
+            <span className="menu-icon" aria-hidden="true">
+              {radio ? '■' : '▸'}
+            </span>
+            <span className="menu-label">Radio</span>
+          </button>
+
+          <button
+            className={`menu-trigger${showLatest ? ' on' : ''}`}
+            onClick={() => setShowLatest((v) => !v)}
+            aria-pressed={showLatest}
+            title="What's new on the labels"
+          >
+            <span className="menu-icon" aria-hidden="true">
+              ✦
+            </span>
+            <span className="menu-label">Latest</span>
+          </button>
+
+          <Menu
+            label="Filters"
+            icon="◑"
+            title="Choose which labels are shown"
+            badge={enabled.size < LABEL_KEYS.length ? `${enabled.size}/${LABEL_KEYS.length}` : undefined}
+          >
+            {() => (
+              <>
+                <div className="menu-heading">Labels</div>
+                {LABEL_KEYS.map((key) => (
+                  <label key={key} className="menu-check">
+                    <input
+                      type="checkbox"
+                      checked={enabled.has(key)}
+                      onChange={() => toggleLabel(key)}
+                    />
+                    <span className="legend-dot" style={{ background: labelVar(key) }} />
+                    <span className="menu-check-label">{LABEL_META[key].name}</span>
+                  </label>
+                ))}
+                <div className="menu-foot">
+                  Artist-run family labels — This Never Happened, Odd One Out — will appear
+                  here once they're ingested.
+                </div>
+              </>
+            )}
+          </Menu>
+
+          <Info tab={infoTab} onOpen={setInfoTab} onClose={() => setInfoTab(null)} />
+
+          <button
+            className="menu-trigger"
+            onClick={() => setShowSettings(true)}
+            title="Themes, text size, accessibility, Spotify"
+          >
+            <span className="menu-icon" aria-hidden="true">
+              ⚙
+            </span>
+            <span className="menu-label">Settings</span>
+          </button>
         </div>
-        <Info tab={infoTab} onOpen={setInfoTab} onClose={() => setInfoTab(null)} />
-        <button
-          className="info-button"
-          onClick={() => setShowSettings(true)}
-          title="Themes, text size, accessibility, Spotify"
-        >
-          ⚙ Settings
-        </button>
+
+        {/* Below the breakpoint every control folds into here, so nothing is
+            ever clipped off the end of the row. */}
+        <div className="header-more">
+          <Menu label="Menu" icon="⋯" align="right" title="Views, filters and settings">
+            {(close) => (
+              <>
+                <div className="menu-heading">View</div>
+                <button
+                  className={`menu-item${view === 'labels' ? ' on' : ''}`}
+                  onClick={() => {
+                    setView('labels')
+                    close()
+                  }}
+                >
+                  Labels
+                </button>
+                <button
+                  className={`menu-item${view === 'spectrum' ? ' on' : ''}`}
+                  onClick={() => {
+                    setView('spectrum')
+                    close()
+                  }}
+                >
+                  Spectrum
+                </button>
+
+                <div className="menu-heading">Listen</div>
+                <button
+                  className={`menu-item${radio ? ' on' : ''}`}
+                  onClick={() => {
+                    toggleRadio()
+                    close()
+                  }}
+                >
+                  {radio ? 'Stop radio' : 'Start radio'}
+                </button>
+                <button
+                  className={`menu-item${showLatest ? ' on' : ''}`}
+                  onClick={() => {
+                    setShowLatest((v) => !v)
+                    close()
+                  }}
+                >
+                  Latest releases
+                </button>
+
+                <div className="menu-heading">Labels</div>
+                {LABEL_KEYS.map((key) => (
+                  <label key={key} className="menu-check">
+                    <input
+                      type="checkbox"
+                      checked={enabled.has(key)}
+                      onChange={() => toggleLabel(key)}
+                    />
+                    <span className="legend-dot" style={{ background: labelVar(key) }} />
+                    <span className="menu-check-label">{LABEL_META[key].name}</span>
+                  </label>
+                ))}
+
+                <div className="menu-heading">More</div>
+                <button
+                  className="menu-item"
+                  onClick={() => {
+                    setShowSettings(true)
+                    close()
+                  }}
+                >
+                  Settings
+                </button>
+                <button
+                  className="menu-item"
+                  onClick={() => {
+                    setInfoTab('what')
+                    close()
+                  }}
+                >
+                  About AnjunaTree
+                </button>
+              </>
+            )}
+          </Menu>
+        </div>
+
         <div className="count">
           {layout ? `${matchCount.toLocaleString()} releases` : 'Loading…'}
         </div>
@@ -396,7 +519,11 @@ export default function App() {
         <SettingsPanel
           settings={settings}
           onChange={setSettings}
-          onClose={() => setShowSettings(false)}
+          authError={authError}
+          onClose={() => {
+            setShowSettings(false)
+            setAuthError(null)
+          }}
         />
       )}
       <InstallPrompt />

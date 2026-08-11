@@ -95,6 +95,8 @@ export async function beginLogin(): Promise<void> {
  * Complete the redirect if we came back from Spotify. Always strips the auth
  * params from the URL so a refresh can't replay a spent code.
  */
+export class SpotifyAuthError extends Error {}
+
 export async function completeLoginFromRedirect(): Promise<Session | null> {
   const url = new URL(window.location.href)
   const code = url.searchParams.get('code')
@@ -115,9 +117,21 @@ export async function completeLoginFromRedirect(): Promise<Session | null> {
   sessionStorage.removeItem(STATE_KEY)
   clean()
 
-  if (error || !code || !verifier) return null
+  if (error) {
+    throw new SpotifyAuthError(
+      error === 'invalid_client'
+        ? 'Spotify rejected the app. Check VITE_SPOTIFY_CLIENT_ID.'
+        : `Spotify returned "${error}".`,
+    )
+  }
+  if (!code) return null
+  if (!verifier) {
+    throw new SpotifyAuthError('Sign-in did not complete — the browser dropped the session.')
+  }
   // Mismatched state means the redirect wasn't one we started.
-  if (!expectedState || returnedState !== expectedState) return null
+  if (!expectedState || returnedState !== expectedState) {
+    throw new SpotifyAuthError('Sign-in state did not match; ignoring this redirect.')
+  }
 
   const res = await fetch(`${AUTH_HOST}/api/token`, {
     method: 'POST',
@@ -130,7 +144,14 @@ export async function completeLoginFromRedirect(): Promise<Session | null> {
       code_verifier: verifier,
     }),
   })
-  if (!res.ok) return null
+  if (!res.ok) {
+    // Overwhelmingly this is redirect_uri mismatch: Spotify compares the URI
+    // *exactly*, including the trailing slash.
+    throw new SpotifyAuthError(
+      `Token exchange failed (${res.status}). The redirect URI registered in ` +
+        `the Spotify dashboard must exactly match:\n${redirectUri()}`,
+    )
+  }
   const json = (await res.json()) as {
     access_token: string
     refresh_token?: string

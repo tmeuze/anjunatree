@@ -9,6 +9,8 @@ import type { Profile } from './spotify'
 interface Props {
   settings: Settings
   onChange: (s: Settings) => void
+  /** Message from a failed sign-in redirect, if this load came back from one. */
+  authError: string | null
   onClose: () => void
 }
 
@@ -34,7 +36,7 @@ function Toggle({
   )
 }
 
-export default function SettingsPanel({ settings, onChange, onClose }: Props) {
+export default function SettingsPanel({ settings, onChange, authError, onClose }: Props) {
   const [session, setSession] = useState(spotify.loadSession())
   const [profile, setProfile] = useState<Profile | null>(null)
   const configured = spotify.isConfigured()
@@ -177,6 +179,14 @@ export default function SettingsPanel({ settings, onChange, onClose }: Props) {
                 >
                   Connect Spotify
                 </button>
+                {authError && <p className="set-error">{authError}</p>}
+                {configured && (
+                  <p className="set-hint">
+                    Spotify matches the redirect URI <em>exactly</em> — including the
+                    trailing slash. Register this, character for character:
+                    <code className="set-uri">{spotify.redirectUri()}</code>
+                  </p>
+                )}
                 {!configured && (
                   <p className="set-hint">
                     Not configured on this build — set <code>VITE_SPOTIFY_CLIENT_ID</code>{' '}

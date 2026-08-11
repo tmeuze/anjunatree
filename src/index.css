@@ -61,13 +61,17 @@ body {
   height: 100%;
 }
 
+/* One row, always. Nothing here may wrap onto a second line — as the viewport
+   narrows the controls shed their text labels and fold into menus instead. */
 .header {
   display: flex;
   align-items: center;
-  gap: 16px;
-  padding: 10px 16px;
+  gap: 10px;
+  padding: 8px 14px;
   border-bottom: 1px solid var(--hairline);
-  flex-wrap: wrap;
+  flex-wrap: nowrap;
+  overflow: hidden;
+  min-height: 52px;
 }
 
 /* The lockup. The mark's viewBox is its exact artwork bounds and the wordmark
@@ -79,6 +83,7 @@ body {
   align-items: center;
   gap: 10px;
   min-width: 0;
+  flex-shrink: 0;
 }
 
 .brand-mark {
@@ -137,9 +142,9 @@ body {
 }
 
 .search {
-  flex: 1;
-  min-width: 180px;
-  max-width: 340px;
+  flex: 1 1 140px;
+  min-width: 0;
+  max-width: 320px;
   background: var(--panel);
   border: 1px solid var(--hairline);
   border-radius: 8px;
@@ -1285,4 +1290,230 @@ body {
     -webkit-box-orient: vertical;
     overflow: hidden;
   }
+}
+
+/* ---- header menus -------------------------------------------------------- */
+
+.menu {
+  position: relative;
+  flex-shrink: 0;
+}
+
+.menu-trigger {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  flex-shrink: 0;
+  background: var(--panel);
+  border: 1px solid var(--hairline);
+  border-radius: 8px;
+  padding: 6px 12px;
+  color: var(--ink-secondary);
+  font-size: calc(12.5px * var(--font-scale));
+  line-height: 1.2;
+  white-space: nowrap;
+  cursor: pointer;
+}
+
+.menu-trigger:hover {
+  color: var(--ink);
+}
+
+.menu-trigger.on {
+  color: var(--ink);
+  background: color-mix(in srgb, var(--label-anjunabeats) 18%, transparent);
+  border-color: color-mix(in srgb, var(--label-anjunabeats) 50%, transparent);
+}
+
+/* Radio running — the one control that keeps drawing the eye. */
+.menu-trigger.accent {
+  background: color-mix(in srgb, var(--label-reflections) 16%, transparent);
+  border-color: color-mix(in srgb, var(--label-reflections) 60%, transparent);
+  animation: radio-pulse 2.2s ease-in-out infinite;
+}
+
+.menu-icon {
+  font-size: calc(12px * var(--font-scale));
+  line-height: 1;
+}
+
+.menu-badge {
+  font-size: calc(10px * var(--font-scale));
+  color: var(--ink-muted);
+  font-variant-numeric: tabular-nums;
+}
+
+.menu-pop {
+  position: absolute;
+  top: calc(100% + 6px);
+  left: 0;
+  z-index: 40;
+  min-width: 230px;
+  max-width: min(300px, 90vw);
+  background: var(--panel);
+  border: 1px solid var(--hairline);
+  border-radius: 10px;
+  padding: 6px;
+  box-shadow: 0 10px 34px rgba(0, 0, 0, 0.45);
+}
+
+.menu-pop.right {
+  left: auto;
+  right: 0;
+}
+
+.menu-heading {
+  font-size: calc(10px * var(--font-scale));
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--ink-muted);
+  padding: 8px 10px 4px;
+}
+
+.menu-check {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  padding: 8px 10px;
+  border-radius: 7px;
+  cursor: pointer;
+  font-size: calc(12.5px * var(--font-scale));
+  color: var(--ink);
+}
+
+.menu-check:hover {
+  background: color-mix(in srgb, var(--ink) 8%, transparent);
+}
+
+.menu-check input {
+  width: 15px;
+  height: 15px;
+  accent-color: var(--label-anjunabeats);
+  flex-shrink: 0;
+}
+
+.menu-check-label {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.menu-foot {
+  padding: 8px 10px 6px;
+  border-top: 1px solid var(--hairline);
+  margin-top: 4px;
+  font-size: calc(10.5px * var(--font-scale));
+  color: var(--ink-muted);
+  line-height: 1.45;
+}
+
+/* ---- header collapse ladder ---------------------------------------------
+   Each step sheds the least useful thing first, so the row never wraps. */
+
+@media (max-width: 1240px) {
+  .brand-sub {
+    display: none;
+  }
+}
+
+@media (max-width: 1040px) {
+  .count {
+    display: none;
+  }
+}
+
+@media (max-width: 900px) {
+  /* Icons carry the buttons from here down. */
+  .menu-label {
+    display: none;
+  }
+
+  .menu-trigger {
+    padding: 7px 10px;
+  }
+}
+
+@media (max-width: 620px) {
+  .wordmark {
+    display: none;
+  }
+
+  .view-toggle button {
+    padding: 5px 9px;
+  }
+}
+
+/* ---- header overflow ------------------------------------------------------
+   Above the breakpoint the controls sit inline; below it they collapse into a
+   single "⋯" menu. Clipping a control with overflow:hidden would hide it for
+   good, so nothing is ever merely cut off — it moves. */
+
+.header-controls {
+  display: contents;
+}
+
+.header-more {
+  display: none;
+  margin-left: auto;
+}
+
+.menu-item {
+  display: block;
+  width: 100%;
+  text-align: left;
+  background: none;
+  border: none;
+  border-radius: 7px;
+  padding: 9px 10px;
+  color: var(--ink);
+  font-size: calc(12.5px * var(--font-scale));
+  cursor: pointer;
+}
+
+.menu-item:hover {
+  background: color-mix(in srgb, var(--ink) 8%, transparent);
+}
+
+.menu-item.on {
+  background: color-mix(in srgb, var(--label-anjunabeats) 18%, transparent);
+}
+
+@media (max-width: 760px) {
+  .header-controls {
+    display: none;
+  }
+
+  .header-more {
+    display: block;
+  }
+
+  .search {
+    max-width: none;
+  }
+}
+
+.set-error {
+  margin-top: 10px;
+  padding: 9px 11px;
+  border-radius: 8px;
+  border: 1px solid color-mix(in srgb, var(--label-reflections) 55%, transparent);
+  background: color-mix(in srgb, var(--label-reflections) 14%, transparent);
+  color: var(--ink);
+  font-size: calc(11.5px * var(--font-scale));
+  line-height: 1.5;
+  white-space: pre-line;
+}
+
+.set-uri {
+  display: block;
+  margin-top: 6px;
+  padding: 7px 9px;
+  border-radius: 6px;
+  background: color-mix(in srgb, var(--ink) 10%, transparent);
+  color: var(--ink);
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: calc(11.5px * var(--font-scale));
+  word-break: break-all;
+  user-select: all;
 }

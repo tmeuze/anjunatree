@@ -73,11 +73,23 @@ const isVariousArtists = (rel: CatalogRelease) =>
 const ITUNES_BASE =
   import.meta.env.VITE_ITUNES_BASE ?? (import.meta.env.DEV ? '/itunes' : 'https://itunes.apple.com')
 
+/**
+ * Apple echoes the caller's Origin into `access-control-allow-origin` but sends
+ * no `Vary: Origin`. A shared HTTP cache can therefore replay a response that
+ * was authorised for a *different* origin, and the browser then blocks it as a
+ * CORS failure — which is exactly what happens on iOS Safari after the site has
+ * been opened on two origins (say github.io and the custom domain). Bypassing
+ * the HTTP cache is the fix; these payloads are small and the map itself is
+ * what's precached for offline use.
+ */
+const ITUNES_FETCH: RequestInit = { cache: 'no-store', credentials: 'omit' }
+
 async function search(params: Record<string, string>): Promise<ItunesItem[]> {
   const res = await fetch(
     `${ITUNES_BASE}/search?${new URLSearchParams({ media: 'music', ...params })}`,
+    ITUNES_FETCH,
   )
-  if (!res.ok) throw new Error(`iTunes search failed: ${res.status}`)
+  if (!res.ok) throw new Error(`iTunes search returned ${res.status}`)
   const json = (await res.json()) as { results: ItunesItem[] }
   return json.results
 }
@@ -150,8 +162,8 @@ export async function findRelease(rel: CatalogRelease): Promise<ReleaseMatch | n
 /** Full track list for an iTunes collection, each with its own 30s preview. */
 export async function lookupTracks(collectionId: number): Promise<AlbumTrack[]> {
   const params = new URLSearchParams({ id: String(collectionId), entity: 'song', limit: '200' })
-  const res = await fetch(`${ITUNES_BASE}/lookup?${params}`)
-  if (!res.ok) throw new Error(`iTunes lookup failed: ${res.status}`)
+  const res = await fetch(`${ITUNES_BASE}/lookup?${params}`, ITUNES_FETCH)
+  if (!res.ok) throw new Error(`iTunes lookup returned ${res.status}`)
   const json = (await res.json()) as { results: ItunesItem[] }
   return json.results
     .filter((t) => t.wrapperType === 'track')

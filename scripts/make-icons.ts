@@ -4,14 +4,29 @@
 // rasterises the same geometry the React <TreeMark> draws, and writes PNGs
 // with Node's built-in zlib.
 //
-//   node scripts/make-icons.mjs
+//   node scripts/make-icons.ts
 //
 // Re-run when the mark or the brand colours change; the output is committed.
-// Geometry is kept in step with src/Brand.tsx by hand — they're both small.
+// Geometry is imported from src/brandGeometry.ts — the same numbers <TreeMark>
+// draws, so the icons can never drift from the in-app mark.
 
 import { deflateSync } from 'node:zlib'
 import { writeFileSync, mkdirSync } from 'node:fs'
 import path from 'node:path'
+import {
+  ART_SIZE,
+  AXIS_LINE,
+  AXIS_STROKE,
+  AXIS_Y,
+  CANOPY,
+  TICKS,
+  TICK_BOTTOM,
+  TRUNK,
+  TRUNK_STROKE,
+  frondTriangles,
+} from '../src/brandGeometry.ts'
+
+const FRONDS = frondTriangles()
 
 // Icons can't follow the app's theme, so they're painted for the dark surface,
 // matching the manifest's theme_color and the "Black Room Boy" default.
@@ -21,59 +36,19 @@ const INK = [0xe6, 0xe8, 0xee] // --ink, trunk + canopy
 const CROWN = [0x19, 0x9e, 0x70] // --label-anjunadeep, the newest release
 const SS = 4 // supersampling factor, for antialiased edges
 
-// --- the mark, in the 100x100 artboard (kept in step with src/Brand.tsx) ----
-
-const AXIS_STROKE = 1.6
-const TRUNK_STROKE = 2.6
-
-const AXIS_Y = 94.7
-const TICK_BOTTOM = 100
-const AXIS_LINE = [1.05, AXIS_Y, 99.4, AXIS_Y]
-const TICKS = [19.5, 34.6, 50, 65.3, 80.7]
-const TRUNK = [50, 94.7, 50, 57.5]
-
-const CANOPY = [
-  [21.9, 36.7, 2.4],
-  [39.9, 36.7, 4.1],
-  [60.3, 36.7, 3.4],
-  [78.3, 36.7, 2.2],
-  [32.2, 49.2, 2.9],
-  [50.0, 49.2, 4.3],
-  [68.0, 49.2, 3.1],
-]
-
-// Five splayed fronds — the palm fan.
-const FROND_ANGLES = [-65, -35, 0, 35, 65]
-const FAN_ORIGIN = [50, 31.2]
-const FROND_LENGTH = 31.2
-const FROND_HALF_BASE = 1.7
-
-/** Each frond as a triangle [ [x,y], [x,y], [x,y] ] so it tapers to a point. */
-const FRONDS = FROND_ANGLES.map((deg) => {
-  const t = (deg * Math.PI) / 180
-  const [x, y] = FAN_ORIGIN
-  const tip = [x + Math.sin(t) * FROND_LENGTH, y - Math.cos(t) * FROND_LENGTH]
-  const px = Math.cos(t) * FROND_HALF_BASE
-  const py = Math.sin(t) * FROND_HALF_BASE
-  return [[x + px, y + py], tip, [x - px, y - py]]
-})
-
-/** Artwork already fills its box edge to edge, so nothing needs nudging. */
-const ART_SIZE = 100
-
 const crcTable = Array.from({ length: 256 }, (_, n) => {
   let c = n
   for (let k = 0; k < 8; k++) c = c & 1 ? 0xedb88320 ^ (c >>> 1) : c >>> 1
   return c >>> 0
 })
 
-function crc32(buf) {
+function crc32(buf: Buffer): number {
   let c = 0xffffffff
   for (const b of buf) c = crcTable[(c ^ b) & 0xff] ^ (c >>> 8)
   return (c ^ 0xffffffff) >>> 0
 }
 
-function chunk(type, data) {
+function chunk(type: string, data: Buffer): Buffer {
   const len = Buffer.alloc(4)
   len.writeUInt32BE(data.length)
   const body = Buffer.concat([Buffer.from(type, 'ascii'), data])
@@ -83,7 +58,7 @@ function chunk(type, data) {
 }
 
 /** rgba: Uint8Array of size*size*4 */
-function encodePng(size, rgba) {
+function encodePng(size: number, rgba: Uint8Array): Buffer {
   const ihdr = Buffer.alloc(13)
   ihdr.writeUInt32BE(size, 0)
   ihdr.writeUInt32BE(size, 4)
@@ -108,7 +83,14 @@ function encodePng(size, rgba) {
 }
 
 /** Distance from a point to a segment — a round-capped stroke is just this ≤ half-width. */
-function distToSegment(px, py, x1, y1, x2, y2) {
+function distToSegment(
+  px: number,
+  py: number,
+  x1: number,
+  y1: number,
+  x2: number,
+  y2: number,
+): number {
   const dx = x2 - x1
   const dy = y2 - y1
   const len2 = dx * dx + dy * dy
@@ -118,7 +100,8 @@ function distToSegment(px, py, x1, y1, x2, y2) {
 }
 
 /** Winding test — a point is inside when it sits on one side of all three edges. */
-function inTriangle(px, py, [[ax, ay], [bx, by], [cx, cy]]) {
+function inTriangle(px: number, py: number, tri: [number, number][]): boolean {
+  const [[ax, ay], [bx, by], [cx, cy]] = tri
   const d1 = (px - bx) * (ay - by) - (ax - bx) * (py - by)
   const d2 = (px - cx) * (by - cy) - (bx - cx) * (py - cy)
   const d3 = (px - ax) * (cy - ay) - (cx - ax) * (py - ay)
@@ -128,7 +111,7 @@ function inTriangle(px, py, [[ax, ay], [bx, by], [cx, cy]]) {
 }
 
 /** Colour of the artboard at (ax, ay), painted in SVG order — later wins. */
-function sampleArt(ax, ay) {
+function sampleArt(ax: number, ay: number): number[] {
   let c = BG
   if (distToSegment(ax, ay, ...AXIS_LINE) <= AXIS_STROKE / 2) c = AXIS
   for (const x of TICKS) {
@@ -144,7 +127,7 @@ function sampleArt(ax, ay) {
   return c
 }
 
-function render(size, contentFraction) {
+function render(size: number, contentFraction: number): Uint8Array {
   const rgba = new Uint8Array(size * size * 4)
   const s = (size * contentFraction) / ART_SIZE
   const origin = (size - ART_SIZE * s) / 2
@@ -195,7 +178,7 @@ for (const { file, size, frac } of targets) {
 
 // A crisp vector favicon for browser tabs — same mark, fixed dark palette so it
 // reads on both light and dark browser chrome.
-const hex = (c) => '#' + c.map((v) => v.toString(16).padStart(2, '0')).join('')
+const hex = (c: number[]) => '#' + c.map((v) => v.toString(16).padStart(2, '0')).join('')
 const ticks = TICKS.map(
   (x) => `    <line x1="${x}" y1="${AXIS_Y}" x2="${x}" y2="${TICK_BOTTOM}"/>`,
 ).join('\n')
