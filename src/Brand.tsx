@@ -11,15 +11,15 @@ import {
   AXIS_STROKE,
   AXIS_Y,
   CANOPY,
+  FROND_STROKE,
   TICKS,
   TICK_BOTTOM,
   TRUNK,
   TRUNK_STROKE,
-  frondTriangles,
-  polygonPoints,
+  frondLines,
 } from './brandGeometry'
 
-const FRONDS = frondTriangles()
+const FRONDS = frondLines()
 
 interface MarkProps {
   size?: number
@@ -61,10 +61,14 @@ export function TreeMark({ size = 26, className }: MarkProps) {
         ))}
       </g>
 
-      {/* the palm fan */}
-      <g fill="var(--label-anjunadeep)">
-        {FRONDS.map((tri, i) => (
-          <polygon key={i} points={polygonPoints(tri)} />
+      {/* the palm fan — soft radiating strokes plus the horizontal spine */}
+      <g
+        stroke="var(--label-anjunadeep)"
+        strokeWidth={FROND_STROKE}
+        strokeLinecap="round"
+      >
+        {FRONDS.map(([x1, y1, x2, y2], i) => (
+          <line key={i} x1={x1} y1={y1} x2={x2} y2={y2} />
         ))}
       </g>
     </svg>

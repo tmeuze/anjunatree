@@ -21,12 +21,13 @@ import {
   CANOPY,
   TICKS,
   TICK_BOTTOM,
+  FROND_STROKE,
   TRUNK,
   TRUNK_STROKE,
-  frondTriangles,
+  frondLines,
 } from '../src/brandGeometry.ts'
 
-const FRONDS = frondTriangles()
+const FRONDS = frondLines()
 
 // Icons can't follow the app's theme, so they're painted for the dark surface,
 // matching the manifest's theme_color and the "Black Room Boy" default.
@@ -99,17 +100,6 @@ function distToSegment(
   return Math.hypot(px - (x1 + t * dx), py - (y1 + t * dy))
 }
 
-/** Winding test — a point is inside when it sits on one side of all three edges. */
-function inTriangle(px: number, py: number, tri: [number, number][]): boolean {
-  const [[ax, ay], [bx, by], [cx, cy]] = tri
-  const d1 = (px - bx) * (ay - by) - (ax - bx) * (py - by)
-  const d2 = (px - cx) * (by - cy) - (bx - cx) * (py - cy)
-  const d3 = (px - ax) * (cy - ay) - (cx - ax) * (py - ay)
-  const neg = d1 < 0 || d2 < 0 || d3 < 0
-  const pos = d1 > 0 || d2 > 0 || d3 > 0
-  return !(neg && pos)
-}
-
 /** Colour of the artboard at (ax, ay), painted in SVG order — later wins. */
 function sampleArt(ax: number, ay: number): number[] {
   let c = BG
@@ -121,8 +111,8 @@ function sampleArt(ax: number, ay: number): number[] {
   for (const [cx, cy, r] of CANOPY) {
     if (Math.hypot(ax - cx, ay - cy) <= r) c = INK
   }
-  for (const tri of FRONDS) {
-    if (inTriangle(ax, ay, tri)) c = CROWN
+  for (const [x1, y1, x2, y2] of FRONDS) {
+    if (distToSegment(ax, ay, x1, y1, x2, y2) <= FROND_STROKE / 2) c = CROWN
   }
   return c
 }
@@ -186,7 +176,7 @@ const canopy = CANOPY.map(([cx, cy, r]) => `    <circle cx="${cx}" cy="${cy}" r=
   '\n',
 )
 const fronds = FRONDS.map(
-  (tri) => `    <polygon points="${tri.map(([x, y]) => `${x},${y}`).join(' ')}"/>`,
+  ([x1, y1, x2, y2]) => `    <line x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}"/>`,
 ).join('\n')
 
 writeFileSync(
@@ -203,7 +193,7 @@ ${ticks}
   <g fill="${hex(INK)}">
 ${canopy}
   </g>
-  <g fill="${hex(CROWN)}">
+  <g stroke="${hex(CROWN)}" stroke-width="${FROND_STROKE}" stroke-linecap="round">
 ${fronds}
   </g>
 </svg>
