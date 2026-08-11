@@ -70,8 +70,13 @@ body {
   padding: 8px 14px;
   border-bottom: 1px solid var(--hairline);
   flex-wrap: nowrap;
-  overflow: hidden;
   min-height: 52px;
+  /* Not `overflow: hidden`. That stopped the row wrapping but silently clipped
+     every dropdown opening out of it; the collapse ladder below is what keeps
+     the row from overflowing. A stacking context above the legend bar keeps
+     open menus on top of it. */
+  position: relative;
+  z-index: 30;
 }
 
 /* The lockup. The mark's viewBox is its exact artwork bounds and the wordmark
@@ -1347,7 +1352,7 @@ body {
   position: absolute;
   top: calc(100% + 6px);
   left: 0;
-  z-index: 40;
+  z-index: 60;
   min-width: 230px;
   max-width: min(300px, 90vw);
   background: var(--panel);
@@ -1444,18 +1449,39 @@ body {
   }
 }
 
-/* ---- header overflow ------------------------------------------------------
-   Above the breakpoint the controls sit inline; below it they collapse into a
-   single "⋯" menu. Clipping a control with overflow:hidden would hide it for
-   good, so nothing is ever merely cut off — it moves. */
+/* ---- header sections ------------------------------------------------------
+   Three groups, separated by a hairline: search, filters, then listen +
+   settings/about. Each collapses on its own as the viewport narrows, so the
+   navbar shrinks section by section instead of dumping everything into one
+   catch-all menu. */
 
-.header-controls {
-  display: contents;
+.nav-section {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
 }
 
-.header-more {
-  display: none;
+.nav-search {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.nav-actions {
   margin-left: auto;
+  padding-left: 10px;
+  border-left: 1px solid var(--hairline);
+}
+
+.nav-filters {
+  padding-left: 10px;
+  border-left: 1px solid var(--hairline);
+}
+
+.menu-search {
+  width: 100%;
+  max-width: none;
+  margin: 2px 0 4px;
 }
 
 .menu-item {
@@ -1479,156 +1505,66 @@ body {
   background: color-mix(in srgb, var(--label-anjunabeats) 18%, transparent);
 }
 
-@media (max-width: 760px) {
-  .header-controls {
+/* Which variant of a control is live at this width. */
+.mobile-only {
+  display: none;
+}
+
+.nav-search-collapsed {
+  display: none;
+}
+
+@media (max-width: 1240px) {
+  .brand-sub {
     display: none;
   }
+}
 
-  .header-more {
-    display: block;
+@media (max-width: 1040px) {
+  .count {
+    display: none;
   }
-
-  .search {
-    max-width: none;
-  }
-}
-
-.set-error {
-  margin-top: 10px;
-  padding: 9px 11px;
-  border-radius: 8px;
-  border: 1px solid color-mix(in srgb, var(--label-reflections) 55%, transparent);
-  background: color-mix(in srgb, var(--label-reflections) 14%, transparent);
-  color: var(--ink);
-  font-size: calc(11.5px * var(--font-scale));
-  line-height: 1.5;
-  white-space: pre-line;
-}
-
-.set-uri {
-  display: block;
-  margin-top: 6px;
-  padding: 7px 9px;
-  border-radius: 6px;
-  background: color-mix(in srgb, var(--ink) 10%, transparent);
-  color: var(--ink);
-  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
-  font-size: calc(11.5px * var(--font-scale));
-  word-break: break-all;
-  user-select: all;
-}
-
-/* ---- update available ----------------------------------------------------
-   Same shape as the install banner, but sits above it and uses the Anjunadeep
-   accent so a waiting update never reads as an error. */
-
-.update-cta {
-  position: fixed;
-  left: 12px;
-  right: 12px;
-  bottom: 12px;
-  z-index: 60;
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  padding: 12px 14px;
-  border: 1px solid color-mix(in srgb, var(--label-anjunadeep) 55%, transparent);
-  border-radius: 12px;
-  background: var(--panel);
-  box-shadow: 0 10px 34px rgba(0, 0, 0, 0.45);
-}
-
-.update-dot {
-  width: 9px;
-  height: 9px;
-  border-radius: 50%;
-  flex-shrink: 0;
-  background: var(--label-anjunadeep);
-  animation: pulse 1.8s ease-in-out infinite;
-}
-
-@media (min-width: 821px) {
-  .update-cta {
-    left: auto;
-    width: 380px;
-  }
-}
-
-/* ---- playback source + Spotify transport --------------------------------- */
-
-.source-badge {
-  display: inline-flex;
-  align-items: center;
-  gap: 5px;
-  padding: 1px 7px;
-  border-radius: 999px;
-  border: 1px solid var(--hairline);
-  font-size: 0.94em;
-}
-
-.source-badge.full {
-  border-color: color-mix(in srgb, var(--label-anjunadeep) 55%, transparent);
-  background: color-mix(in srgb, var(--label-anjunadeep) 16%, transparent);
-  color: var(--ink);
-}
-
-.spotify-transport {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  flex-shrink: 0;
-  width: 300px;
-}
-
-.transport-button {
-  background: var(--panel);
-  border: 1px solid var(--hairline);
-  border-radius: 50%;
-  width: 32px;
-  height: 32px;
-  flex-shrink: 0;
-  color: var(--ink);
-  font-size: calc(11px * var(--font-scale));
-  cursor: pointer;
-  line-height: 1;
-}
-
-.transport-time {
-  font-size: calc(11px * var(--font-scale));
-  color: var(--ink-secondary);
-  font-variant-numeric: tabular-nums;
-  white-space: nowrap;
-}
-
-.transport-track {
-  flex: 1;
-  height: 4px;
-  border-radius: 2px;
-  background: color-mix(in srgb, var(--ink) 18%, transparent);
-  overflow: hidden;
-}
-
-.transport-fill {
-  display: block;
-  height: 100%;
-  border-radius: 2px;
-  background: var(--label-anjunadeep);
-  transition: width 0.3s linear;
-}
-
-.set-buttons {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
-  margin-top: 4px;
 }
 
 @media (max-width: 900px) {
-  .spotify-transport {
-    width: 180px;
+  /* Icons carry the buttons from here down. */
+  .menu-label {
+    display: none;
   }
 
-  .transport-time {
+  .menu-trigger {
+    padding: 7px 10px;
+  }
+}
+
+@media (max-width: 760px) {
+  .desktop-only {
+    display: none;
+  }
+
+  .mobile-only {
+    display: block;
+  }
+
+  /* The search field becomes its own menu, keeping the row short. */
+  .nav-search {
+    display: none;
+  }
+
+  .nav-search-collapsed {
+    display: flex;
+    margin-left: auto;
+  }
+
+  .nav-filters,
+  .nav-actions {
+    margin-left: 0;
+    padding-left: 8px;
+  }
+}
+
+@media (max-width: 620px) {
+  .wordmark {
     display: none;
   }
 }

@@ -259,16 +259,45 @@ export default function App() {
           </span>
         </div>
 
-        <input
-          className="search"
-          type="search"
-          placeholder="Search artist, title, or catalogue #…"
-          value={query}
-          onChange={(e) => setQuery(e.target.value)}
-        />
+        {/* --- search ------------------------------------------------- */}
+        <div className="nav-section nav-search">
+          <input
+            className="search"
+            type="search"
+            placeholder="Search artist, title, or catalogue #…"
+            value={query}
+            onChange={(e) => setQuery(e.target.value)}
+          />
+        </div>
+        <div className="nav-section nav-search-collapsed">
+          <Menu
+            label="Search"
+            icon="⌕"
+            title="Search the catalogue"
+            badge={query.trim() ? '•' : undefined}
+          >
+            {() => (
+              <>
+                <div className="menu-heading">Search</div>
+                <input
+                  className="search menu-search"
+                  type="search"
+                  autoFocus
+                  placeholder="Artist, title, or catalogue #…"
+                  value={query}
+                  onChange={(e) => setQuery(e.target.value)}
+                />
+                <div className="menu-foot">
+                  Matches artists, titles and catalogue numbers — try “ANJ153”.
+                </div>
+              </>
+            )}
+          </Menu>
+        </div>
 
-        <div className="header-controls">
-          <div className="view-toggle" role="tablist" aria-label="Map view">
+        {/* --- filters -------------------------------------------------- */}
+        <div className="nav-section nav-filters">
+          <div className="view-toggle desktop-only" role="tablist" aria-label="Map view">
             <button
               role="tab"
               aria-selected={view === 'labels'}
@@ -287,8 +316,62 @@ export default function App() {
             </button>
           </div>
 
+          <Menu
+            label="Filters"
+            icon="◑"
+            title="Labels and map view"
+            badge={
+              enabled.size < LABEL_KEYS.length ? `${enabled.size}/${LABEL_KEYS.length}` : undefined
+            }
+          >
+            {(close) => (
+              <>
+                <div className="menu-heading">Labels</div>
+                {LABEL_KEYS.map((key) => (
+                  <label key={key} className="menu-check">
+                    <input
+                      type="checkbox"
+                      checked={enabled.has(key)}
+                      onChange={() => toggleLabel(key)}
+                    />
+                    <span className="legend-dot" style={{ background: labelVar(key) }} />
+                    <span className="menu-check-label">{LABEL_META[key].name}</span>
+                  </label>
+                ))}
+
+                <div className="menu-heading mobile-only">View</div>
+                <button
+                  className={`menu-item mobile-only${view === 'labels' ? ' on' : ''}`}
+                  onClick={() => {
+                    setView('labels')
+                    close()
+                  }}
+                >
+                  Labels
+                </button>
+                <button
+                  className={`menu-item mobile-only${view === 'spectrum' ? ' on' : ''}`}
+                  onClick={() => {
+                    setView('spectrum')
+                    close()
+                  }}
+                >
+                  Spectrum
+                </button>
+
+                <div className="menu-foot">
+                  Artist-run family labels — This Never Happened, Odd One Out — will
+                  appear here once they&apos;re ingested.
+                </div>
+              </>
+            )}
+          </Menu>
+        </div>
+
+        {/* --- listen + about/settings ---------------------------------- */}
+        <div className="nav-section nav-actions">
           <button
-            className={`menu-trigger${radio ? ' on accent' : ''}`}
+            className={`menu-trigger desktop-only${radio ? ' on accent' : ''}`}
             onClick={toggleRadio}
             title="Play through the map, one preview at a time"
           >
@@ -299,7 +382,7 @@ export default function App() {
           </button>
 
           <button
-            className={`menu-trigger${showLatest ? ' on' : ''}`}
+            className={`menu-trigger desktop-only${showLatest ? ' on' : ''}`}
             onClick={() => setShowLatest((v) => !v)}
             aria-pressed={showLatest}
             title="What's new on the labels"
@@ -310,38 +393,12 @@ export default function App() {
             <span className="menu-label">Latest</span>
           </button>
 
-          <Menu
-            label="Filters"
-            icon="◑"
-            title="Choose which labels are shown"
-            badge={enabled.size < LABEL_KEYS.length ? `${enabled.size}/${LABEL_KEYS.length}` : undefined}
-          >
-            {() => (
-              <>
-                <div className="menu-heading">Labels</div>
-                {LABEL_KEYS.map((key) => (
-                  <label key={key} className="menu-check">
-                    <input
-                      type="checkbox"
-                      checked={enabled.has(key)}
-                      onChange={() => toggleLabel(key)}
-                    />
-                    <span className="legend-dot" style={{ background: labelVar(key) }} />
-                    <span className="menu-check-label">{LABEL_META[key].name}</span>
-                  </label>
-                ))}
-                <div className="menu-foot">
-                  Artist-run family labels — This Never Happened, Odd One Out — will appear
-                  here once they're ingested.
-                </div>
-              </>
-            )}
-          </Menu>
-
-          <Info tab={infoTab} onOpen={setInfoTab} onClose={() => setInfoTab(null)} />
+          <div className="desktop-only">
+            <Info tab={infoTab} onOpen={setInfoTab} onClose={() => setInfoTab(null)} />
+          </div>
 
           <button
-            className="menu-trigger"
+            className="menu-trigger desktop-only"
             onClick={() => setShowSettings(true)}
             title="Themes, text size, accessibility, Spotify"
           >
@@ -350,89 +407,55 @@ export default function App() {
             </span>
             <span className="menu-label">Settings</span>
           </button>
-        </div>
 
-        {/* Below the breakpoint every control folds into here, so nothing is
-            ever clipped off the end of the row. */}
-        <div className="header-more">
-          <Menu label="Menu" icon="⋯" align="right" title="Views, filters and settings">
-            {(close) => (
-              <>
-                <div className="menu-heading">View</div>
-                <button
-                  className={`menu-item${view === 'labels' ? ' on' : ''}`}
-                  onClick={() => {
-                    setView('labels')
-                    close()
-                  }}
-                >
-                  Labels
-                </button>
-                <button
-                  className={`menu-item${view === 'spectrum' ? ' on' : ''}`}
-                  onClick={() => {
-                    setView('spectrum')
-                    close()
-                  }}
-                >
-                  Spectrum
-                </button>
+          {/* Everything above, folded into one control on a narrow screen. */}
+          <div className="mobile-only">
+            <Menu label="More" icon="⋯" align="right" title="Listen, settings and about">
+              {(close) => (
+                <>
+                  <div className="menu-heading">Listen</div>
+                  <button
+                    className={`menu-item${radio ? ' on' : ''}`}
+                    onClick={() => {
+                      toggleRadio()
+                      close()
+                    }}
+                  >
+                    {radio ? 'Stop radio' : 'Start radio'}
+                  </button>
+                  <button
+                    className={`menu-item${showLatest ? ' on' : ''}`}
+                    onClick={() => {
+                      setShowLatest((v) => !v)
+                      close()
+                    }}
+                  >
+                    Latest releases
+                  </button>
 
-                <div className="menu-heading">Listen</div>
-                <button
-                  className={`menu-item${radio ? ' on' : ''}`}
-                  onClick={() => {
-                    toggleRadio()
-                    close()
-                  }}
-                >
-                  {radio ? 'Stop radio' : 'Start radio'}
-                </button>
-                <button
-                  className={`menu-item${showLatest ? ' on' : ''}`}
-                  onClick={() => {
-                    setShowLatest((v) => !v)
-                    close()
-                  }}
-                >
-                  Latest releases
-                </button>
-
-                <div className="menu-heading">Labels</div>
-                {LABEL_KEYS.map((key) => (
-                  <label key={key} className="menu-check">
-                    <input
-                      type="checkbox"
-                      checked={enabled.has(key)}
-                      onChange={() => toggleLabel(key)}
-                    />
-                    <span className="legend-dot" style={{ background: labelVar(key) }} />
-                    <span className="menu-check-label">{LABEL_META[key].name}</span>
-                  </label>
-                ))}
-
-                <div className="menu-heading">More</div>
-                <button
-                  className="menu-item"
-                  onClick={() => {
-                    setShowSettings(true)
-                    close()
-                  }}
-                >
-                  Settings
-                </button>
-                <button
-                  className="menu-item"
-                  onClick={() => {
-                    setInfoTab('what')
-                    close()
-                  }}
-                >
-                  About AnjunaTree
-                </button>
-              </>
-            )}
-          </Menu>
+                  <div className="menu-heading">More</div>
+                  <button
+                    className="menu-item"
+                    onClick={() => {
+                      setShowSettings(true)
+                      close()
+                    }}
+                  >
+                    Settings
+                  </button>
+                  <button
+                    className="menu-item"
+                    onClick={() => {
+                      setInfoTab('what')
+                      close()
+                    }}
+                  >
+                    About AnjunaTree
+                  </button>
+                </>
+              )}
+            </Menu>
+          </div>
         </div>
 
         <div className="count">

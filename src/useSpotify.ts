@@ -93,15 +93,7 @@ export function useSpotify(): SpotifyState {
       })
       .catch((e: unknown) => {
         if (cancelled) return
-        // Firefox drops `encrypted-media` and `autoplay` from the SDK iframe's
-        // allow-list, so the player never becomes ready there. Say so plainly
-        // rather than leaving a generic timeout.
-        const firefox = navigator.userAgent.includes('Firefox')
-        const message = firefox
-          ? 'Firefox can’t run the Spotify player (it blocks the DRM permission the SDK needs). Previews still work — use Chrome, Edge or Safari for full tracks.'
-          : e instanceof Error
-            ? e.message
-            : String(e)
+        const message = e instanceof Error ? e.message : String(e)
         setError(message)
         setStatus('spotify-player', 'error', message)
         // Let a later reconnect try again rather than latching the failure.
