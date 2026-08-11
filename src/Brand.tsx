@@ -1,66 +1,99 @@
-// The AnjunaTree brand lockup. Geometry lives in ./brandGeometry so the SVG
-// here and the rasterised favicon/PWA icons are literally the same numbers.
+// The AnjunaTree brand lockup. Geometry is transcribed exactly from
+// brand/brandmark/at-palm-fan.svg into ./brandGeometry, so this component and
+// the rasterised favicon/PWA icons both draw the same numbers.
 //
-// Colours come from the theme, never fixed: the canopy takes `currentColor`,
-// the fan takes the label accent, and trunk + timeline share the muted ink so
-// the structure recedes behind the dots. The supplied source art ships one
-// variant for light backgrounds and one for dark, and neither survives a theme
-// switch — this does.
+// Three gradients, one per part, each derived from the active theme's own
+// tokens (see themes.ts `applyTheme`) so the mark re-colours with every theme
+// automatically: the structure (axis + trunk) fades dim-to-solid ink, the
+// canopy sweeps across all three label colours — it's the catalogue in
+// miniature — and the fan runs from Anjunadeep into the theme's accent.
 
 import {
   AXIS_LINE,
-  AXIS_Y,
+  AXIS_STROKE,
+  ART_SIZE,
   CANOPY,
-  STRUCTURE_STROKE,
+  CROWN_DOT,
+  FAN_ORIGIN,
+  FAN_STROKE,
+  FRONDS,
   TICKS,
-  TICK_BOTTOM,
   TRUNK,
-  fanDots,
+  TRUNK_STROKE,
 } from './brandGeometry'
-
-const FAN = fanDots()
 
 interface MarkProps {
   size?: number
   className?: string
+  /** Unique per rendered instance — SVG gradient ids are global to the document. */
+  gradientId?: string
 }
 
-export function TreeMark({ size = 26, className }: MarkProps) {
+let instanceCounter = 0
+
+export function TreeMark({ size = 26, className, gradientId }: MarkProps) {
+  const uid = gradientId ?? `tm${++instanceCounter}`
+
   return (
     <svg
       width={size}
       height={size}
-      viewBox="0 0 100 100"
+      viewBox={`0 0 ${ART_SIZE} ${ART_SIZE}`}
       fill="none"
       aria-hidden="true"
       className={className}
       focusable="false"
     >
-      {/* trunk and timeline: one structure, one colour, deliberately quiet */}
+      <defs>
+        <linearGradient id={`${uid}-structure`} x1="0" y1="1" x2="0" y2="0">
+          <stop offset="0" style={{ stopColor: 'var(--mark-structure-1, #898781)' }} />
+          <stop offset="1" style={{ stopColor: 'var(--mark-structure-2, #e6e8ee)' }} />
+        </linearGradient>
+        <linearGradient id={`${uid}-canopy`} x1="0" y1="0" x2="1" y2="0">
+          <stop offset="0" style={{ stopColor: 'var(--mark-canopy-1, #3987e5)' }} />
+          <stop offset="0.5" style={{ stopColor: 'var(--mark-canopy-2, #199e70)' }} />
+          <stop offset="1" style={{ stopColor: 'var(--mark-canopy-3, #d95926)' }} />
+        </linearGradient>
+        <linearGradient id={`${uid}-fan`} x1="0" y1="1" x2="0" y2="0">
+          <stop offset="0" style={{ stopColor: 'var(--mark-fan-1, #199e70)' }} />
+          <stop offset="1" style={{ stopColor: 'var(--mark-fan-2, #3987e5)' }} />
+        </linearGradient>
+      </defs>
+
+      {/* trunk and timeline: one structure, one gradient, deliberately quiet */}
       <g
-        stroke="var(--ink-muted)"
-        strokeWidth={STRUCTURE_STROKE}
+        stroke={`url(#${uid}-structure)`}
+        strokeWidth={AXIS_STROKE}
         strokeLinecap="round"
-        opacity="0.85"
+        opacity="0.9"
       >
         <line x1={AXIS_LINE[0]} y1={AXIS_LINE[1]} x2={AXIS_LINE[2]} y2={AXIS_LINE[3]} />
-        {TICKS.map((x) => (
-          <line key={x} x1={x} y1={AXIS_Y} x2={x} y2={TICK_BOTTOM} />
+        {TICKS.map(([x1, y1, x2, y2], i) => (
+          <line key={i} x1={x1} y1={y1} x2={x2} y2={y2} />
         ))}
-        <line x1={TRUNK[0]} y1={TRUNK[1]} x2={TRUNK[2]} y2={TRUNK[3]} />
       </g>
+      <line
+        x1={TRUNK[0]}
+        y1={TRUNK[1]}
+        x2={TRUNK[2]}
+        y2={TRUNK[3]}
+        stroke={`url(#${uid}-structure)`}
+        strokeWidth={TRUNK_STROKE}
+        strokeLinecap="square"
+      />
 
-      {/* the canopy */}
-      <g fill="currentColor">
+      {/* the canopy — the catalogue's three labels, swept into one gradient */}
+      <g fill={`url(#${uid}-canopy)`}>
         {CANOPY.map(([cx, cy, r]) => (
           <circle key={`c${cx}-${cy}`} cx={cx} cy={cy} r={r} />
         ))}
+        <circle cx={CROWN_DOT[0]} cy={CROWN_DOT[1]} r={CROWN_DOT[2]} />
       </g>
 
-      {/* the palm fan, made of the same dots */}
-      <g fill="var(--label-anjunadeep)">
-        {FAN.map(([cx, cy, r], i) => (
-          <circle key={`f${i}`} cx={cx} cy={cy} r={r} />
+      {/* the palm fan */}
+      <g stroke={`url(#${uid}-fan)`} strokeWidth={FAN_STROKE} strokeLinecap="round">
+        {FRONDS.map(([x, y], i) => (
+          <line key={i} x1={FAN_ORIGIN[0]} y1={FAN_ORIGIN[1]} x2={x} y2={y} />
         ))}
       </g>
     </svg>

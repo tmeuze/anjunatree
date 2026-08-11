@@ -38,9 +38,9 @@ Every piece of editable content lives in one obvious file. Edit, check it with
 | Release-type shapes and names | `src/shapes.ts` | Shape is the non-colour identity channel — keep them distinct. |
 | Extended-family labels | `src/familyLabels.ts` | Research notes and MBIDs. |
 | Which labels get ingested | `scripts/ingest.ts` | The `LABELS` table; `key` folds an entity into a lane. |
-| App name, icons, install behaviour | `vite.config.ts` (manifest) | Icons come from `scripts/make-icons.mjs` — re-run it after a colour change. |
-| Logo and wordmark | `src/Brand.tsx` | `TreeMark` uses `currentColor` + theme vars so it works on every theme — don't hardcode fills. The wordmark is live text in Jost small caps. |
-| Favicon / PWA icons | `scripts/make-icons.mjs` | Redraws the same tree geometry as `Brand.tsx`; re-run `node scripts/make-icons.mjs` and commit the output. |
+| App name, icons, install behaviour | `vite.config.ts` (manifest) | Icons come from `scripts/make-icons.ts` — re-run it after a colour change. |
+| Logo and wordmark | `src/brandGeometry.ts` + `src/Brand.tsx` | Geometry lives in `brandGeometry.ts` (transcribed from `brand/brandmark/at-palm-fan.svg`) and is shared with the icon rasteriser — edit geometry there, not in the component. Colours are theme-derived gradients, never hardcoded. The wordmark is live text in Jost small caps. |
+| Favicon / PWA icons | `scripts/make-icons.ts` | Redraws the same tree geometry as `Brand.tsx`; re-run `node scripts/make-icons.ts` and commit the output. |
 | Weekly refresh timing | `.github/workflows/refresh-catalogue.yml` | The `cron` line. |
 
 ### Text sizes

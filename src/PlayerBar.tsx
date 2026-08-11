@@ -33,6 +33,10 @@ export default function PlayerBar({
 }: Props) {
   const audioRef = useRef<HTMLAudioElement>(null)
   const [mode, setMode] = useState<Mode>('preview')
+  const [muted, setMuted] = useState(false)
+  // The preview <audio> element reports its own clock; Spotify reports its own.
+  // One local mirror keeps the progress bar and time readout identical either way.
+  const [previewTime, setPreviewTime] = useState({ positionMs: 0, durationMs: 0 })
   const { node, tracks, index, artworkUrl } = nowPlaying
   const track = tracks[index]
 
@@ -46,6 +50,7 @@ export default function PlayerBar({
       if (cancelled || !audio || !track?.previewUrl) return
       setMode('preview')
       audio.src = track.previewUrl
+      audio.muted = muted
       // Autoplay can be blocked before the first gesture; controls cover it.
       audio.play().catch(() => onPausedChange(true))
     }
@@ -71,6 +76,7 @@ export default function PlayerBar({
         clearStatus('track-resolve')
         if (ok) {
           setMode('spotify')
+          spotify.setMuted(muted)
         } else {
           setStatus('track-fallback', 'info', 'Not on Spotify — playing the preview.')
           playPreview()
@@ -108,77 +114,112 @@ export default function PlayerBar({
 
   const viaSpotify = mode === 'spotify'
   const state = spotify.playback
+  const positionMs = viaSpotify ? state?.positionMs ?? 0 : previewTime.positionMs
+  const durationMs = viaSpotify ? state?.durationMs ?? 0 : previewTime.durationMs
+  const progress = durationMs ? Math.min(100, (positionMs / durationMs) * 100) : 0
+
+  const toggleMute = () => {
+    const next = !muted
+    setMuted(next)
+    if (viaSpotify) spotify.setMuted(next)
+    else if (audioRef.current) audioRef.current.muted = next
+  }
+
+  const togglePlayPause = () => {
+    if (viaSpotify) {
+      if (state?.paused) spotify.resume()
+      else spotify.pause()
+      return
+    }
+    const audio = audioRef.current
+    if (!audio) return
+    if (audio.paused) audio.play().catch(() => {})
+    else audio.pause()
+  }
 
   return (
     <div className="player-bar">
       <button className="player-bar-art" onClick={onJumpTo} title="Show this release on the map">
         {artworkUrl ? (
-          <img src={artworkUrl.replace('300x300', '120x120')} alt="" width={44} height={44} />
+          <img src={artworkUrl.replace('300x300', '120x120')} alt="" width={56} height={56} />
         ) : (
           <span className="player-bar-art-placeholder" style={{ background: labelVar(node.lane) }} />
         )}
       </button>
 
-      <div className="player-bar-info">
-        <div className="player-bar-title">
-          {!paused && (
-            <span className="eq" style={{ color: labelVar(node.lane) }} aria-hidden="true">
-              <span />
-              <span />
-              <span />
-            </span>
-          )}
+      <div className="player-bar-body">
+        <div className="player-bar-info">
           <span className="player-bar-title-text">{track?.trackName ?? node.rel.title}</span>
+          <span className="player-bar-meta">
+            {track?.artistName || node.rel.artist} · {node.rel.title} ·{' '}
+            {mode === 'resolving' ? (
+              'finding full track…'
+            ) : viaSpotify ? (
+              <span className="source-badge full">Full track · Spotify</span>
+            ) : (
+              <span className="source-badge">30s preview</span>
+            )}
+          </span>
         </div>
-        <div className="player-bar-meta">
-          {track?.artistName || node.rel.artist} · {node.rel.title} ·{' '}
-          {mode === 'resolving' ? (
-            'finding full track…'
-          ) : viaSpotify ? (
-            <span className="source-badge full">Full track · Spotify</span>
-          ) : (
-            <span className="source-badge">30s preview</span>
-          )}
+
+        <div className="transport-track" aria-hidden="true">
+          <span className="transport-fill" style={{ width: `${progress}%` }} />
+        </div>
+        <div className="transport-times" aria-hidden="true">
+          <span>{fmt(positionMs)}</span>
+          <span>{fmt(durationMs)}</span>
         </div>
       </div>
 
-      {viaSpotify ? (
-        <div className="spotify-transport">
-          <button
-            className="transport-button"
-            onClick={() => (state?.paused ? spotify.resume() : spotify.pause())}
-            aria-label={state?.paused ? 'Play' : 'Pause'}
-          >
-            {state?.paused ? '▶' : '❚❚'}
-          </button>
-          <span className="transport-time">
-            {fmt(state?.positionMs ?? 0)} / {fmt(state?.durationMs ?? 0)}
-          </span>
-          <span className="transport-track" aria-hidden="true">
-            <span
-              className="transport-fill"
-              style={{
-                width: state?.durationMs
-                  ? `${Math.min(100, (state.positionMs / state.durationMs) * 100)}%`
-                  : '0%',
-              }}
-            />
-          </span>
-        </div>
-      ) : (
-        <audio
-          ref={audioRef}
-          controls
-          className="player-bar-audio"
-          onPlay={() => onPausedChange(false)}
-          onPause={() => onPausedChange(true)}
-          onEnded={onEnded}
-        />
-      )}
+      {/* Play/pause, mute, and stop are always the same three controls and the
+          same three buttons regardless of which source is playing. */}
+      <div className="transport-controls">
+        <button
+          className="transport-button primary"
+          onClick={togglePlayPause}
+          disabled={mode === 'resolving'}
+          aria-label={paused ? 'Play' : 'Pause'}
+          title={paused ? 'Play' : 'Pause'}
+        >
+          {paused ? '▶' : '❚❚'}
+        </button>
+        <button
+          className={`transport-button${muted ? ' active' : ''}`}
+          onClick={toggleMute}
+          aria-label={muted ? 'Unmute' : 'Mute'}
+          title={muted ? 'Unmute' : 'Mute'}
+        >
+          {muted ? '🔇' : '🔊'}
+        </button>
+        <button
+          className="transport-button stop"
+          onClick={onClose}
+          aria-label="Stop playback"
+          title="Stop"
+        >
+          ■
+        </button>
+      </div>
 
-      <button className="player-close" onClick={onClose} aria-label="Stop playback">
-        ✕
-      </button>
+      <audio
+        ref={audioRef}
+        hidden
+        onPlay={() => onPausedChange(false)}
+        onPause={() => onPausedChange(true)}
+        onEnded={onEnded}
+        onTimeUpdate={() => {
+          // Read the live element off the ref rather than the synthetic
+          // event's currentTarget: a timeupdate can still be in flight the
+          // instant this element unmounts (a track/source switch), and
+          // currentTarget going null there crashed the whole player.
+          const a = audioRef.current
+          if (a) setPreviewTime((p) => ({ ...p, positionMs: a.currentTime * 1000 }))
+        }}
+        onLoadedMetadata={() => {
+          const a = audioRef.current
+          if (a) setPreviewTime({ positionMs: 0, durationMs: a.duration * 1000 })
+        }}
+      />
     </div>
   )
 }

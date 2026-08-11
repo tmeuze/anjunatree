@@ -19,6 +19,7 @@ export interface SpotifyState {
   playFull: (artist: string, title: string) => Promise<boolean>
   pause: () => void
   resume: () => void
+  setMuted: (muted: boolean) => void
   disconnect: () => void
   refresh: () => void
 }
@@ -145,6 +146,20 @@ export function useSpotify(): SpotifyState {
     playerRef.current?.player.resume().catch(() => {})
   }, [])
 
+  const lastVolumeRef = useRef(0.8)
+  const setMuted = useCallback((muted: boolean) => {
+    const player = playerRef.current?.player
+    if (!player) return
+    if (muted) {
+      player.getVolume().then((v) => {
+        if (v > 0) lastVolumeRef.current = v
+        player.setVolume(0).catch(() => {})
+      })
+    } else {
+      player.setVolume(lastVolumeRef.current || 0.8).catch(() => {})
+    }
+  }, [])
+
   const disconnect = useCallback(() => {
     playerRef.current?.disconnect()
     playerRef.current = null
@@ -169,6 +184,7 @@ export function useSpotify(): SpotifyState {
     playFull,
     pause,
     resume,
+    setMuted,
     disconnect,
     refresh,
   }

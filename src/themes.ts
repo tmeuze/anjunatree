@@ -39,6 +39,13 @@ export interface Theme {
   blurb: string
   mode: 'dark' | 'light'
   colors: ThemeColors
+  /**
+   * The second stop of the fan's gradient (its first stop is always the
+   * theme's Anjunadeep colour). Lets a theme's fan lean toward its own accent
+   * — Flow State's violet, for instance — without hand-authoring three full
+   * gradients per theme. Defaults to the Anjunabeats colour.
+   */
+  fanAccent?: string
 }
 
 const DARK_LABELS = {
@@ -104,6 +111,7 @@ export const THEMES: Theme[] = [
       ...DARK_LABELS,
       glow: ['rgba(57,135,229,0.10)', 'rgba(144,133,233,0.08)', 'rgba(217,89,38,0.05)'],
     },
+    fanAccent: '#9085e9',
   },
   {
     id: 'sun-and-moon',
@@ -149,6 +157,19 @@ export function applyTheme(theme: Theme): void {
   r.style.setProperty('--glow-1', c.glow[0])
   r.style.setProperty('--glow-2', c.glow[1])
   r.style.setProperty('--glow-3', c.glow[2])
+
+  // Brandmark gradients, derived from this theme's own tokens rather than
+  // hand-authored per theme: structure fades dim-to-solid ink, the canopy
+  // sweeps across all three label colours (it's the whole catalogue in
+  // miniature), and the fan runs Anjunadeep into the theme's accent.
+  r.style.setProperty('--mark-structure-1', c.inkMuted)
+  r.style.setProperty('--mark-structure-2', c.ink)
+  r.style.setProperty('--mark-canopy-1', c.anjunabeats)
+  r.style.setProperty('--mark-canopy-2', c.anjunadeep)
+  r.style.setProperty('--mark-canopy-3', c.reflections)
+  r.style.setProperty('--mark-fan-1', c.anjunadeep)
+  r.style.setProperty('--mark-fan-2', theme.fanAccent ?? c.anjunabeats)
+
   r.dataset.themeMode = theme.mode
   r.style.colorScheme = theme.mode
 }

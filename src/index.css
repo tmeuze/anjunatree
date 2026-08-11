@@ -29,6 +29,13 @@
   --glow-1: rgba(57, 135, 229, 0.09);
   --glow-2: rgba(25, 158, 112, 0.07);
   --glow-3: rgba(217, 89, 38, 0.05);
+  --mark-structure-1: #898781;
+  --mark-structure-2: #e6e8ee;
+  --mark-canopy-1: #3987e5;
+  --mark-canopy-2: #199e70;
+  --mark-canopy-3: #d95926;
+  --mark-fan-1: #199e70;
+  --mark-fan-2: #3987e5;
   --surface: #0b0d12;
   --panel: #12151d;
   --ink: #e6e8ee;
@@ -194,7 +201,10 @@ body {
 .count {
   color: var(--ink-secondary);
   font-size: calc(12px * var(--font-scale));
-  margin-left: auto;
+  /* No margin-left: auto here — .nav-actions already claims the leftover
+     space; a second auto-margin element split it and left a dead gap before
+     the action icons instead of pushing them flush to the edge. */
+  margin-left: 10px;
   font-variant-numeric: tabular-nums;
 }
 
@@ -722,17 +732,108 @@ body {
   font-weight: 600;
 }
 
+.info-badge {
+  display: inline-block;
+  padding: 4px 10px;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--label-reflections) 16%, transparent);
+  border: 1px solid color-mix(in srgb, var(--label-reflections) 45%, transparent);
+  color: var(--ink);
+  font-size: calc(11px * var(--font-scale));
+  margin-bottom: 12px;
+}
+
+.quick-tips {
+  list-style: none;
+  padding-left: 0 !important;
+  margin: 12px 0;
+}
+
+.quick-tips li {
+  padding: 8px 10px;
+  border-radius: 8px;
+  background: color-mix(in srgb, var(--ink) 5%, transparent);
+}
+
+.info-cta-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin: 14px 0 8px;
+}
+
+.info-cta-row .set-button {
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+}
+
+.info-subhead {
+  font-size: calc(12px * var(--font-scale));
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--ink-muted);
+  margin: 22px 0 10px;
+  padding-top: 14px;
+  border-top: 1px solid var(--hairline);
+}
+
+.changelog {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.changelog-entry ul {
+  padding-left: 18px;
+  gap: 4px;
+  font-size: calc(12.5px * var(--font-scale));
+}
+
+.changelog-head {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  margin-bottom: 5px;
+}
+
+.changelog-head strong {
+  font-size: calc(13.5px * var(--font-scale));
+}
+
+.changelog-date {
+  font-size: calc(10.5px * var(--font-scale));
+  color: var(--ink-muted);
+}
+
+.changelog-entry.latest .changelog-head strong {
+  color: var(--label-anjunadeep);
+}
+
 .info-body a {
   color: var(--label-anjunabeats);
 }
 
+/* CTA buttons are also <a> tags (Help's "Report a bug"/"View source" link out)
+   — the rule above would otherwise paint their text the generic link colour
+   instead of the button's own ink, which read as low-contrast blue-on-green. */
+.info-body a.set-button {
+  color: var(--ink);
+}
+
+/* The player bar is deliberately the most prominent chrome in the app after
+   the map itself: a listener's hands live here. Same three controls
+   (play/pause, mute, stop) and the same progress bar regardless of whether
+   Spotify or the iTunes preview is the source — see PlayerBar.tsx. */
 .player-bar {
   display: flex;
   align-items: center;
-  gap: 12px;
-  padding: 8px 14px;
+  gap: 14px;
+  padding: 10px 16px;
   border-top: 1px solid var(--hairline);
   background: linear-gradient(180deg, var(--panel), var(--surface));
+  box-shadow: 0 -8px 24px rgba(0, 0, 0, 0.25);
   flex-shrink: 0;
 }
 
@@ -742,35 +843,39 @@ body {
   padding: 0;
   cursor: pointer;
   line-height: 0;
+  flex-shrink: 0;
 }
 
 .player-bar-art img,
 .player-bar-art-placeholder {
-  width: 44px;
-  height: 44px;
-  border-radius: 6px;
+  width: 56px;
+  height: 56px;
+  border-radius: 8px;
   display: block;
-  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.5);
+  box-shadow: 0 3px 16px rgba(0, 0, 0, 0.55);
 }
 
 .player-bar-art-placeholder {
   opacity: 0.35;
 }
 
-.player-bar-info {
+.player-bar-body {
   min-width: 0;
   flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
 }
 
-.player-bar-title {
+.player-bar-info {
   display: flex;
-  align-items: center;
-  font-size: calc(13px * var(--font-scale));
-  font-weight: 600;
+  flex-direction: column;
   min-width: 0;
 }
 
 .player-bar-title-text {
+  font-size: calc(13.5px * var(--font-scale));
+  font-weight: 700;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -785,15 +890,118 @@ body {
   text-overflow: ellipsis;
 }
 
-.player-bar-audio {
-  height: 34px;
-  width: 300px;
+.source-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 1px 7px;
+  border-radius: 999px;
+  border: 1px solid var(--hairline);
+  font-size: 0.94em;
+}
+
+.source-badge.full {
+  border-color: color-mix(in srgb, var(--label-anjunadeep) 55%, transparent);
+  background: color-mix(in srgb, var(--label-anjunadeep) 16%, transparent);
+  color: var(--ink);
+}
+
+.transport-track {
+  height: 5px;
+  border-radius: 3px;
+  background: color-mix(in srgb, var(--ink) 16%, transparent);
+  overflow: hidden;
+}
+
+.transport-fill {
+  display: block;
+  height: 100%;
+  border-radius: 3px;
+  background: linear-gradient(90deg, var(--label-anjunadeep), var(--label-anjunabeats));
+  transition: width 0.3s linear;
+}
+
+.transport-times {
+  display: flex;
+  justify-content: space-between;
+  font-size: calc(10px * var(--font-scale));
+  color: var(--ink-muted);
+  font-variant-numeric: tabular-nums;
+}
+
+.transport-controls {
+  display: flex;
+  align-items: center;
+  gap: 8px;
   flex-shrink: 0;
 }
 
-@media (max-width: 900px) {
-  .player-bar-audio {
-    width: 180px;
+.transport-button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  background: var(--panel);
+  border: 1px solid var(--hairline);
+  color: var(--ink);
+  font-size: calc(13px * var(--font-scale));
+  cursor: pointer;
+  line-height: 1;
+}
+
+.transport-button:hover:not(:disabled) {
+  border-color: color-mix(in srgb, var(--label-anjunabeats) 55%, transparent);
+}
+
+.transport-button:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+
+.transport-button.primary {
+  width: 44px;
+  height: 44px;
+  font-size: calc(15px * var(--font-scale));
+  background: linear-gradient(
+    135deg,
+    color-mix(in srgb, var(--label-anjunadeep) 35%, var(--panel)),
+    color-mix(in srgb, var(--label-anjunabeats) 35%, var(--panel))
+  );
+  border-color: color-mix(in srgb, var(--label-anjunadeep) 50%, transparent);
+}
+
+.transport-button.active {
+  color: var(--label-reflections);
+  border-color: color-mix(in srgb, var(--label-reflections) 55%, transparent);
+}
+
+.transport-button.stop:hover {
+  color: var(--label-reflections);
+  border-color: color-mix(in srgb, var(--label-reflections) 55%, transparent);
+}
+
+@media (max-width: 620px) {
+  .player-bar {
+    gap: 10px;
+    padding: 8px 10px;
+  }
+
+  .player-bar-art img,
+  .player-bar-art-placeholder {
+    width: 44px;
+    height: 44px;
+  }
+
+  .transport-button {
+    width: 34px;
+    height: 34px;
+  }
+
+  .transport-button.primary {
+    width: 40px;
+    height: 40px;
   }
 }
 
@@ -1462,9 +1670,74 @@ body {
   flex-shrink: 0;
 }
 
-.nav-search {
-  flex: 1 1 auto;
+/* Collapsed to an icon by default, at every width — expands inline on click
+   or focus, collapses back once empty and unfocused. */
+.search-box {
+  display: flex;
+  align-items: center;
+  position: relative;
+}
+
+.search-toggle {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  flex-shrink: 0;
+  background: var(--panel);
+  border: 1px solid var(--hairline);
+  border-radius: 8px;
+  color: var(--ink-secondary);
+  font-size: calc(14px * var(--font-scale));
+  cursor: pointer;
+}
+
+.search-box.open .search-toggle {
+  color: var(--ink);
+  border-color: color-mix(in srgb, var(--label-anjunabeats) 55%, transparent);
+  border-end-end-radius: 0;
+  border-start-end-radius: 0;
+}
+
+.search-box .search {
+  width: 0;
   min-width: 0;
+  max-width: none;
+  padding: 7px 0;
+  margin: 0;
+  border: 1px solid transparent;
+  border-inline-start: none;
+  border-start-start-radius: 0;
+  border-end-start-radius: 0;
+  opacity: 0;
+  pointer-events: none;
+  transition: width 0.18s ease, opacity 0.12s ease, padding 0.18s ease;
+}
+
+.search-box.open .search {
+  width: 210px;
+  padding: 7px 28px 7px 10px;
+  opacity: 1;
+  pointer-events: auto;
+  border-color: var(--hairline);
+}
+
+.search-clear {
+  position: absolute;
+  right: 6px;
+  top: 50%;
+  transform: translateY(-50%);
+  background: none;
+  border: none;
+  color: var(--ink-muted);
+  font-size: calc(11px * var(--font-scale));
+  cursor: pointer;
+  padding: 4px;
+}
+
+.search-clear:hover {
+  color: var(--ink);
 }
 
 .nav-actions {
@@ -1510,10 +1783,6 @@ body {
   display: none;
 }
 
-.nav-search-collapsed {
-  display: none;
-}
-
 @media (max-width: 1240px) {
   .brand-sub {
     display: none;
@@ -1546,14 +1815,8 @@ body {
     display: block;
   }
 
-  /* The search field becomes its own menu, keeping the row short. */
-  .nav-search {
-    display: none;
-  }
-
-  .nav-search-collapsed {
-    display: flex;
-    margin-left: auto;
+  .search-box.open .search {
+    width: 150px;
   }
 
   .nav-filters,

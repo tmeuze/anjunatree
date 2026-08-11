@@ -74,13 +74,28 @@ npm run ingest
   reduced motion, all persisted locally (`src/settings.ts`, `src/SettingsPanel.tsx`).
 - **Installable** — a PWA via `vite-plugin-pwa`: the shell, the catalogue, and
   the fonts are precached, so the whole map works offline. Icons are generated
-  dependency-free by `node scripts/make-icons.mjs`.
-- **Brand** — the mark is a canopy of release-dots on a timeline axis, drawn
-  from theme variables (`src/Brand.tsx`) so it re-colours with every theme; the
-  same geometry is rasterised for the favicon and PWA icons. The wordmark is
-  live text in [Jost](https://github.com/indestructible-type/Jost) (SIL OFL),
-  self-hosted rather than loaded from a CDN so the app makes no third-party
-  requests.
+  dependency-free by `node scripts/make-icons.ts`.
+- **Brand** — the mark is transcribed exactly from `brand/brandmark/at-palm-fan.svg`
+  into `src/brandGeometry.ts`, the single source both `<TreeMark>` and the icon
+  rasteriser draw from. Three gradients (structure, canopy, fan) are derived
+  from the active theme's own tokens, so the mark re-colours with every theme
+  automatically. The wordmark is live text in
+  [Jost](https://github.com/indestructible-type/Jost) (SIL OFL), self-hosted
+  rather than loaded from a CDN.
+- **Player** — one custom transport (play/pause, mute, stop, progress) shared
+  by both playback sources (`src/PlayerBar.tsx`), so switching between a
+  preview and a full Spotify track never changes which buttons you're
+  looking at.
+- **Get started, and staying current** — a first visit opens a short welcome
+  tab with CTAs (Connect Spotify, Open Settings); a returning visit after a
+  new release lands opens the changelog automatically instead
+  (`src/useUpdateFlow.ts`, `src/changelog.ts`). The update banner performs a
+  real cache-bypassing reload, not a plain `location.reload()` — see the
+  comment in `src/UpdatePrompt.tsx`.
+- **Analytics (optional)** — self-hosted, cookie-free Umami, wired in
+  `src/analytics.ts`. Off by default; only activates when both
+  `VITE_UMAMI_SRC` and `VITE_UMAMI_WEBSITE_ID` are set, which only the
+  maintainer can do since Umami has no shared hosted instance to point at.
 - **Fresh by itself** — a scheduled Action re-reads MusicBrainz weekly and
   redeploys only when the catalogue actually changed.
 - **Colors** — the three label colors (`#3987e5` / `#199e70` / `#d95926`)

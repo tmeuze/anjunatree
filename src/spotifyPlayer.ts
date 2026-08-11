@@ -27,6 +27,7 @@ interface SpotifyPlayerLike {
   resume(): Promise<void>
   seek(ms: number): Promise<void>
   setVolume(v: number): Promise<void>
+  getVolume(): Promise<number>
 }
 
 declare global {

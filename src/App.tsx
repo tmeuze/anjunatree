@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { TreeMark, Wordmark } from './Brand'
 import Menu from './Menu'
+import SearchBox from './SearchBox'
 import Info from './Info'
 import type { InfoTab } from './Info'
 import InstallPrompt from './InstallPrompt'
@@ -19,6 +20,7 @@ import type { Settings } from './settings'
 import { applyTheme, getTheme } from './themes'
 import * as spotify from './spotify'
 import { useSpotify } from './useSpotify'
+import { useUpdateFlow } from './useUpdateFlow'
 import { LABEL_SITE_URL, REPO_URL } from './constants'
 import type { LabelKey, MapNode, NowPlaying, ViewKey } from './types'
 
@@ -66,6 +68,26 @@ export default function App() {
   const [generatedAt, setGeneratedAt] = useState<string | null>(null)
   const [authError, setAuthError] = useState<string | null>(null)
   const spotifyState = useSpotify()
+  const updateFlow = useUpdateFlow()
+
+  // A cacheless refresh (UpdatePrompt) appends a one-off cache-busting query
+  // param; drop it immediately so it never shows in the address bar or gets
+  // treated as app state.
+  useEffect(() => {
+    const url = new URL(window.location.href)
+    if (!url.searchParams.has('_v')) return
+    url.searchParams.delete('_v')
+    history.replaceState(null, '', url.pathname + url.search + url.hash)
+  }, [])
+
+  // First visit → the welcome tab. A returning visit after a new changelog
+  // entry shipped → the About tab, where the changelog lives. Either way,
+  // this fires once; dismiss() records that it's been seen.
+  useEffect(() => {
+    if (updateFlow.auto === 'welcome') setInfoTab('welcome')
+    else if (updateFlow.auto === 'changelog') setInfoTab('about')
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [updateFlow.auto])
 
   const theme = useMemo(() => getTheme(settings.theme), [settings.theme])
 
@@ -259,40 +281,8 @@ export default function App() {
           </span>
         </div>
 
-        {/* --- search ------------------------------------------------- */}
-        <div className="nav-section nav-search">
-          <input
-            className="search"
-            type="search"
-            placeholder="Search artist, title, or catalogue #…"
-            value={query}
-            onChange={(e) => setQuery(e.target.value)}
-          />
-        </div>
-        <div className="nav-section nav-search-collapsed">
-          <Menu
-            label="Search"
-            icon="⌕"
-            title="Search the catalogue"
-            badge={query.trim() ? '•' : undefined}
-          >
-            {() => (
-              <>
-                <div className="menu-heading">Search</div>
-                <input
-                  className="search menu-search"
-                  type="search"
-                  autoFocus
-                  placeholder="Artist, title, or catalogue #…"
-                  value={query}
-                  onChange={(e) => setQuery(e.target.value)}
-                />
-                <div className="menu-foot">
-                  Matches artists, titles and catalogue numbers — try “ANJ153”.
-                </div>
-              </>
-            )}
-          </Menu>
+        <div className="nav-section">
+          <SearchBox value={query} onChange={setQuery} />
         </div>
 
         {/* --- filters -------------------------------------------------- */}
@@ -394,7 +384,25 @@ export default function App() {
           </button>
 
           <div className="desktop-only">
-            <Info tab={infoTab} onOpen={setInfoTab} onClose={() => setInfoTab(null)} />
+            <Info
+              tab={infoTab}
+              onOpen={setInfoTab}
+              onClose={() => {
+                setInfoTab(null)
+                updateFlow.dismiss()
+              }}
+              onOpenSettings={() => {
+                setInfoTab(null)
+                updateFlow.dismiss()
+                setShowSettings(true)
+              }}
+              onConnectSpotify={() => {
+                setInfoTab(null)
+                updateFlow.dismiss()
+                if (spotify.isConfigured()) spotify.beginLogin().catch(() => {})
+                else setShowSettings(true)
+              }}
+            />
           </div>
 
           <button
@@ -446,7 +454,7 @@ export default function App() {
                   <button
                     className="menu-item"
                     onClick={() => {
-                      setInfoTab('what')
+                      setInfoTab('welcome')
                       close()
                     }}
                   >
