@@ -10,7 +10,10 @@ export default defineConfig({
   plugins: [
     react(),
     VitePWA({
-      registerType: 'autoUpdate',
+      // 'prompt', not 'autoUpdate': an installed copy could otherwise keep
+      // serving a cached build indefinitely without telling anyone. The new
+      // worker waits, and <UpdatePrompt> offers the refresh.
+      registerType: 'prompt',
       includeAssets: ['icons/favicon.svg', 'icons/apple-touch-icon.png'],
       manifest: {
         name: 'AnjunaTree — the Anjuna music catalogue, visualised',

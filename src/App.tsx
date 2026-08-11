@@ -4,6 +4,7 @@ import Menu from './Menu'
 import Info from './Info'
 import type { InfoTab } from './Info'
 import InstallPrompt from './InstallPrompt'
+import UpdatePrompt from './UpdatePrompt'
 import Latest from './Latest'
 import MapCanvas from './MapCanvas'
 import PlayerBar from './PlayerBar'
@@ -526,6 +527,7 @@ export default function App() {
           }}
         />
       )}
+      <UpdatePrompt />
       <InstallPrompt />
     </div>
   )

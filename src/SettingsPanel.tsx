@@ -167,10 +167,14 @@ export default function SettingsPanel({ settings, onChange, authError, onClose }
                   AnjunaTree works fully without an account — every release plays a
                   30-second preview. Connecting Spotify is how the map gets personal:
                 </p>
+                <p className="set-hint">
+                  Signing in today links your account and confirms your plan. The
+                  features it unlocks are still being built:
+                </p>
                 <ul className="set-list">
-                  <li>Full-length tracks instead of previews (Spotify Premium)</li>
-                  <li>Your saved releases lit up across the timeline</li>
-                  <li>Turn a constellation into a playlist in your account</li>
+                  <li>Full-length tracks instead of previews (needs Premium) — in progress</li>
+                  <li>Your saved releases lit up across the timeline — planned</li>
+                  <li>Turn a constellation into a playlist — planned</li>
                 </ul>
                 <button
                   className="set-button primary"

@@ -1,9 +1,8 @@
 // Release matching against the iTunes Search API (no auth required).
 //
-// Apple serves `access-control-allow-origin: *` on both /search and /lookup,
-// so the browser can call them directly and the app needs no server of its
-// own. Local dev still goes through the Vite proxy at /itunes; set
-// VITE_ITUNES_BASE to a proxy origin if Apple ever drops that header.
+// Apple allows direct browser calls to /search and /lookup, so the app needs
+// no server of its own. Local dev still goes through the Vite proxy at
+// /itunes; set VITE_ITUNES_BASE to a proxy origin if that ever changes.
 //
 // Strategy: search *albums* first — a release maps naturally to an iTunes
 // collection (singles and EPs are collections there too, with a "- Single" /
@@ -77,21 +76,74 @@ const ITUNES_BASE =
  * Apple echoes the caller's Origin into `access-control-allow-origin` but sends
  * no `Vary: Origin`. A shared HTTP cache can therefore replay a response that
  * was authorised for a *different* origin, and the browser then blocks it as a
- * CORS failure — which is exactly what happens on iOS Safari after the site has
- * been opened on two origins (say github.io and the custom domain). Bypassing
- * the HTTP cache is the fix; these payloads are small and the map itself is
- * what's precached for offline use.
+ * CORS failure — seen on iOS Safari once the site has been opened on two
+ * origins (say github.io and the custom domain). So we bypass the HTTP cache
+ * and keep our own, below.
  */
 const ITUNES_FETCH: RequestInit = { cache: 'no-store', credentials: 'omit' }
 
+/**
+ * Apple also drops the occasional connection outright under repeated requests
+ * — roughly one in twenty when measured back to back. In the browser that
+ * surfaces as a rejected fetch ("Load failed" in Safari), which is what the
+ * intermittent "Lookup failed" was: browsing the map fires several requests
+ * per release, so the odds of hitting one climb quickly, while a single
+ * deep-link usually gets through. Retrying briefly absorbs it.
+ */
+const RETRY_DELAYS_MS = [250, 900]
+
+/**
+ * Responses are immutable for our purposes, and bypassing the HTTP cache would
+ * otherwise mean re-requesting the same release every time it's opened. One
+ * in-memory cache per session fixes that and cuts the request count sharply,
+ * which is itself the best defence against the dropped connections above.
+ */
+const responseCache = new Map<string, Promise<ItunesItem[]>>()
+
+async function fetchItems(url: string): Promise<ItunesItem[]> {
+  let lastError: unknown
+  for (let attempt = 0; attempt <= RETRY_DELAYS_MS.length; attempt++) {
+    if (attempt > 0) {
+      await new Promise((r) => setTimeout(r, RETRY_DELAYS_MS[attempt - 1]))
+    }
+    try {
+      const res = await fetch(url, ITUNES_FETCH)
+      // 4xx won't fix itself; only retry transient server-side failures.
+      if (!res.ok) {
+        if (res.status < 500 && res.status !== 429) {
+          throw new Error(`iTunes returned ${res.status}`)
+        }
+        lastError = new Error(`iTunes returned ${res.status}`)
+        continue
+      }
+      const json = (await res.json()) as { results: ItunesItem[] }
+      return json.results
+    } catch (e) {
+      lastError = e
+    }
+  }
+  throw lastError instanceof Error
+    ? lastError
+    : new Error('Could not reach the iTunes catalogue')
+}
+
+function cachedFetch(url: string): Promise<ItunesItem[]> {
+  const hit = responseCache.get(url)
+  if (hit) return hit
+  // Cache the promise, not the result, so concurrent callers share one request.
+  const pending = fetchItems(url).catch((e) => {
+    // A failure must not be cached, or one blip poisons that release forever.
+    responseCache.delete(url)
+    throw e
+  })
+  responseCache.set(url, pending)
+  return pending
+}
+
 async function search(params: Record<string, string>): Promise<ItunesItem[]> {
-  const res = await fetch(
+  return cachedFetch(
     `${ITUNES_BASE}/search?${new URLSearchParams({ media: 'music', ...params })}`,
-    ITUNES_FETCH,
   )
-  if (!res.ok) throw new Error(`iTunes search returned ${res.status}`)
-  const json = (await res.json()) as { results: ItunesItem[] }
-  return json.results
 }
 
 const artwork = (item: ItunesItem, size: number) =>
@@ -162,10 +214,8 @@ export async function findRelease(rel: CatalogRelease): Promise<ReleaseMatch | n
 /** Full track list for an iTunes collection, each with its own 30s preview. */
 export async function lookupTracks(collectionId: number): Promise<AlbumTrack[]> {
   const params = new URLSearchParams({ id: String(collectionId), entity: 'song', limit: '200' })
-  const res = await fetch(`${ITUNES_BASE}/lookup?${params}`, ITUNES_FETCH)
-  if (!res.ok) throw new Error(`iTunes lookup returned ${res.status}`)
-  const json = (await res.json()) as { results: ItunesItem[] }
-  return json.results
+  const results = await cachedFetch(`${ITUNES_BASE}/lookup?${params}`)
+  return results
     .filter((t) => t.wrapperType === 'track')
     .map((t) => ({
       trackName: t.trackName ?? 'Unknown',

@@ -101,11 +101,13 @@ export default function Info({ tab, onOpen, onClose }: Props) {
                   <h2>What you get by connecting an account</h2>
                   <p>
                     Everything works without signing in — every release plays a
-                    30-second preview from Apple's public catalogue. Connecting{' '}
-                    <strong>Spotify</strong> in Settings is what makes it personal:
-                    full-length tracks instead of previews, your own saved releases lit
-                    up across the timeline, and a way to turn any artist's constellation
-                    into a playlist. Apple Music support is planned next.
+                    30-second preview from Apple's public catalogue, and that is
+                    currently how <em>all</em> playback works. Connecting{' '}
+                    <strong>Spotify</strong> in Settings links your account today; the
+                    things it will unlock — full-length tracks for Premium listeners,
+                    your own saved releases lit up across the timeline, and turning a
+                    constellation into a playlist — are still being built. Apple Music
+                    comes after that.
                   </p>
                 </>
               )}
