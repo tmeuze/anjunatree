@@ -309,6 +309,7 @@ export default function App() {
           <Menu
             label="Filters"
             icon="◑"
+            align="right"
             title="Labels and map view"
             badge={
               enabled.size < LABEL_KEYS.length ? `${enabled.size}/${LABEL_KEYS.length}` : undefined
