@@ -8,6 +8,12 @@ import type { AlbumTrack, MapNode, NowPlaying } from './types'
 
 export const VARIOUS_ARTISTS_MBID = '89ad4ac3-39f7-470e-963a-56509c546377'
 
+// Off for now — the user is evaluating a more robust sidecar tool for
+// collecting genre-placement feedback instead of pre-filled GitHub
+// Discussions. Flip this back on (and see the `genrePlacementUrl` memo
+// below) once that's decided.
+const GENRE_PLACEMENT_VOTING_ENABLED = false
+
 interface Props {
   node: MapNode
   constellationId: string | null
@@ -198,12 +204,16 @@ export default function ReleasePanel({
         ))}
       </div>
 
-      <div className="panel-section-label">Genre placement</div>
-      <div className="panel-genre-vote">
-        <a className="set-button" href={genrePlacementUrl} target="_blank" rel="noreferrer">
-          Suggest a genre placement
-        </a>
-      </div>
+      {GENRE_PLACEMENT_VOTING_ENABLED && (
+        <>
+          <div className="panel-section-label">Genre placement</div>
+          <div className="panel-genre-vote">
+            <a className="set-button" href={genrePlacementUrl} target="_blank" rel="noreferrer">
+              Suggest a genre placement
+            </a>
+          </div>
+        </>
+      )}
 
       <div className="panel-section-label">
         Tracks

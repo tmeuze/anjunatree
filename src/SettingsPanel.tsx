@@ -189,8 +189,6 @@ export default function SettingsPanel({
                 </p>
                 <ul className="set-list">
                   <li>Full-length tracks instead of previews (needs Premium)</li>
-                  <li>Your saved releases lit up across the timeline — planned</li>
-                  <li>Turn a constellation into a playlist — planned</li>
                 </ul>
                 <button
                   className="set-button primary"
@@ -200,18 +198,8 @@ export default function SettingsPanel({
                   Connect Spotify
                 </button>
                 {authError && <p className="set-error">{authError}</p>}
-                {configured && (
-                  <p className="set-hint">
-                    Spotify matches the redirect URI <em>exactly</em> — including the
-                    trailing slash. Register this, character for character:
-                    <code className="set-uri">{spotify.redirectUri()}</code>
-                  </p>
-                )}
                 {!configured && (
-                  <p className="set-hint">
-                    Not configured on this build — set <code>VITE_SPOTIFY_CLIENT_ID</code>{' '}
-                    and redeploy. See docs/DEVELOPMENT.md.
-                  </p>
+                  <p className="set-hint">Spotify connection isn&apos;t available yet.</p>
                 )}
               </>
             )}

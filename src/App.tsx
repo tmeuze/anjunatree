@@ -349,11 +349,6 @@ export default function App() {
                 >
                   Spectrum
                 </button>
-
-                <div className="menu-foot">
-                  Artist-run family labels — This Never Happened, Odd One Out — will
-                  appear here once they&apos;re ingested.
-                </div>
               </>
             )}
           </Menu>
