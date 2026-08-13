@@ -45,7 +45,7 @@ jobs:
     needs: build
     runs-on: ubuntu-latest
     # Scoping to an environment lets you require review before a deploy can
-    # read these values — see the security notes in the README.
+    # read these values — see the security notes in docs/DEVELOPMENT.md.
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}

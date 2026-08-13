@@ -210,7 +210,7 @@ export default function SettingsPanel({
                 {!configured && (
                   <p className="set-hint">
                     Not configured on this build — set <code>VITE_SPOTIFY_CLIENT_ID</code>{' '}
-                    and redeploy. See the README.
+                    and redeploy. See docs/DEVELOPMENT.md.
                   </p>
                 )}
               </>

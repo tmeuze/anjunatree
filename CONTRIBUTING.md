@@ -81,5 +81,6 @@ npm run build     # type-checks and builds
 ```
 
 The app must stay a **static site with no server component** and **no secrets
-in the client bundle**. See the "Secrets" section of the README before adding
-any credential or API integration.
+in the client bundle**. See the "Secrets" section of
+[docs/DEVELOPMENT.md](docs/DEVELOPMENT.md) before adding any credential or
+API integration.
