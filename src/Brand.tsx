@@ -92,7 +92,20 @@ export function TreeMark({ size = 26, className }: MarkProps) {
       focusable="false"
     >
       <defs>
-        <linearGradient id={`${uid}-structure`} x1="0" y1="1" x2="0" y2="0">
+        {/* userSpaceOnUse, not the objectBoundingBox default: the axis line is
+            perfectly horizontal, so its own bounding box has zero height —
+            and a vertical gradient's Y coordinates are undefined against a
+            zero-height box per the SVG spec, which rendered it invisible in
+            every browser. Fixed coordinates over the artwork's real Y range
+            sidestep that entirely. */}
+        <linearGradient
+          id={`${uid}-structure`}
+          gradientUnits="userSpaceOnUse"
+          x1="256"
+          y1="499"
+          x2="256"
+          y2="12"
+        >
           <stop offset="0" data-var="--mark-structure-1" stopColor={FALLBACK['--mark-structure-1']} />
           <stop offset="1" data-var="--mark-structure-2" stopColor={FALLBACK['--mark-structure-2']} />
         </linearGradient>

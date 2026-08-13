@@ -51,7 +51,7 @@ npm run ingest
 - **Constellations** — selecting a release lights up every release sharing
   its artist's MusicBrainz ID, connected chronologically; chips in the panel
   switch between credited artists (Various Artists is deliberately inert).
-- **On Rotation** — plays through the map chronologically (or walks the current
+- **Surprise Me** — plays through the map chronologically (or walks the current
   constellation), one preview per release, skipping unmatched ones.
 - **Shareable URLs** — the hash always encodes view, search, filters, and
   selection; any view of the map is a link.

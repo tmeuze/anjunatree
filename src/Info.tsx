@@ -10,12 +10,19 @@ const TAB_TITLE: Record<InfoTab, string> = {
   about: 'About',
 }
 
+const TAB_ICON: Record<InfoTab, string> = {
+  welcome: '🌱',
+  install: '⇩',
+  about: '?',
+}
+
 interface Props {
   tab: InfoTab | null
   onOpen: (tab: InfoTab) => void
   onClose: () => void
   onOpenSettings: () => void
   onConnectSpotify: () => void
+  spotifyConnected: boolean
 }
 
 export default function Info({
@@ -24,6 +31,7 @@ export default function Info({
   onClose,
   onOpenSettings,
   onConnectSpotify,
+  spotifyConnected,
 }: Props) {
   const [menuOpen, setMenuOpen] = useState(false)
   const menuRef = useRef<HTMLDivElement>(null)
@@ -64,6 +72,9 @@ export default function Info({
                   onOpen(t)
                 }}
               >
+                <span className="menu-item-icon" aria-hidden="true">
+                  {TAB_ICON[t]}
+                </span>
                 {TAB_TITLE[t]}
               </button>
             ))}
@@ -106,12 +117,12 @@ export default function Info({
                       <strong>Scroll</strong> to zoom, <strong>drag</strong> to pan.
                     </li>
                     <li>
-                      <strong>On Rotation</strong>, in the header, plays through the map for you.
+                      <strong>Surprise Me</strong>, in the header, plays through the map for you.
                     </li>
                   </ul>
                   <div className="info-cta-row">
                     <button className="set-button primary" onClick={onConnectSpotify}>
-                      Connect Spotify for full tracks
+                      {spotifyConnected ? '✓ Spotify connected' : 'Connect Spotify for full tracks'}
                     </button>
                     <button className="set-button" onClick={onOpenSettings}>
                       Open Settings

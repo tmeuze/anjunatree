@@ -1,7 +1,11 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="-24 -24 560 560">
   <rect x="-24" y="-24" width="560" height="560" rx="80" fill="#0b0d12"/>
   <defs>
-    <linearGradient id="s" x1="0" y1="1" x2="0" y2="0">
+    <!-- userSpaceOnUse, not the objectBoundingBox default: the axis line is
+         perfectly horizontal, so its own bounding box has zero height, and a
+         vertical gradient's Y coordinates are undefined against that per the
+         SVG spec — see the matching comment in src/Brand.tsx. -->
+    <linearGradient id="s" gradientUnits="userSpaceOnUse" x1="256" y1="499" x2="256" y2="12">
       <stop offset="0" stop-color="#898781"/>
       <stop offset="1" stop-color="#e6e8ee"/>
     </linearGradient>

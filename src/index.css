@@ -153,23 +153,6 @@ body {
   font-size: calc(12px * var(--font-scale));
 }
 
-.search {
-  flex: 1 1 140px;
-  min-width: 0;
-  max-width: 320px;
-  background: var(--panel);
-  border: 1px solid var(--hairline);
-  border-radius: 8px;
-  padding: 7px 12px;
-  color: var(--ink);
-  font-size: calc(13px * var(--font-scale));
-  outline: none;
-}
-
-.search:focus {
-  border-color: color-mix(in srgb, var(--label-anjunabeats) 65%, transparent);
-}
-
 .legend {
   display: flex;
   gap: 6px;
@@ -1235,6 +1218,24 @@ body {
   font-weight: 600;
 }
 
+.theme-menu-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.theme-menu-swatch {
+  display: flex;
+  gap: 3px;
+  flex-shrink: 0;
+}
+
+.theme-menu-swatch i {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+}
+
 .seg {
   display: flex;
   background: var(--panel);
@@ -1558,6 +1559,30 @@ body {
 .menu-icon {
   font-size: calc(12px * var(--font-scale));
   line-height: 1;
+  display: inline-flex;
+}
+
+.menu-icon svg {
+  width: 14px;
+  height: 14px;
+}
+
+.search-icon {
+  width: 14px;
+  height: 14px;
+}
+
+/* A quiet "Spotify is connected" signal, visible without opening Settings. */
+.menu-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--label-anjunadeep);
+  flex-shrink: 0;
+}
+
+.menu-item .menu-dot {
+  margin-left: auto;
 }
 
 .menu-badge {
@@ -1646,8 +1671,11 @@ body {
   }
 }
 
-@media (max-width: 900px) {
-  /* Icons carry the buttons from here down. */
+@media (max-width: 1300px) {
+  /* Icons carry the buttons from here down — the header grew a Theme
+     trigger and a wider, always-visible search field, so this step now
+     kicks in noticeably earlier than 900px to keep the row from
+     overflowing at ordinary desktop widths. */
   .menu-label {
     display: none;
   }
@@ -1678,57 +1706,48 @@ body {
   flex-shrink: 0;
 }
 
-/* Collapsed to an icon by default, at every width — expands inline on click
-   or focus, collapses back once empty and unfocused. */
+/* Everything from search onward bunches to the right edge — the logo is the
+   only thing that stays left, and only because nothing here claims the
+   leftover space before it. */
+.nav-search {
+  margin-left: auto;
+}
+
+/* Visible by default at every width, at a modest fixed size — not an icon
+   that expands into a wide bar, not a bar that eats the whole header either.
+   The search glyph is a fixed prefix inside the field, not a separate toggle
+   button. */
 .search-box {
   display: flex;
   align-items: center;
   position: relative;
-}
-
-.search-toggle {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 32px;
-  height: 32px;
   flex-shrink: 0;
-  background: var(--panel);
-  border: 1px solid var(--hairline);
-  border-radius: 8px;
-  color: var(--ink-secondary);
-  font-size: calc(14px * var(--font-scale));
-  cursor: pointer;
 }
 
-.search-box.open .search-toggle {
-  color: var(--ink);
-  border-color: color-mix(in srgb, var(--label-anjunabeats) 55%, transparent);
-  border-end-end-radius: 0;
-  border-start-end-radius: 0;
+.search-icon {
+  position: absolute;
+  left: 9px;
+  color: var(--ink-muted);
+  pointer-events: none;
 }
 
 .search-box .search {
-  width: 0;
+  width: 150px;
   min-width: 0;
-  max-width: none;
-  padding: 7px 0;
+  background: var(--panel);
+  border: 1px solid var(--hairline);
+  border-radius: 8px;
+  padding: 6px 26px 6px 28px;
   margin: 0;
-  border: 1px solid transparent;
-  border-inline-start: none;
-  border-start-start-radius: 0;
-  border-end-start-radius: 0;
-  opacity: 0;
-  pointer-events: none;
-  transition: width 0.18s ease, opacity 0.12s ease, padding 0.18s ease;
+  color: var(--ink);
+  font-size: calc(12.5px * var(--font-scale));
+  outline: none;
+  transition: width 0.15s ease, border-color 0.15s ease;
 }
 
-.search-box.open .search {
-  width: 210px;
-  padding: 7px 28px 7px 10px;
-  opacity: 1;
-  pointer-events: auto;
-  border-color: var(--hairline);
+.search-box .search:focus {
+  width: 200px;
+  border-color: color-mix(in srgb, var(--label-anjunabeats) 65%, transparent);
 }
 
 .search-clear {
@@ -1749,7 +1768,6 @@ body {
 }
 
 .nav-actions {
-  margin-left: auto;
   padding-left: 10px;
   border-left: 1px solid var(--hairline);
 }
@@ -1766,7 +1784,8 @@ body {
 }
 
 .menu-item {
-  display: block;
+  display: flex;
+  align-items: center;
   width: 100%;
   text-align: left;
   background: none;
@@ -1776,6 +1795,16 @@ body {
   color: var(--ink);
   font-size: calc(12.5px * var(--font-scale));
   cursor: pointer;
+}
+
+.menu-item-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 18px;
+  flex-shrink: 0;
+  color: var(--ink-muted);
+  font-size: calc(12px * var(--font-scale));
 }
 
 .menu-item:hover {
@@ -1791,29 +1820,6 @@ body {
   display: none;
 }
 
-@media (max-width: 1240px) {
-  .brand-sub {
-    display: none;
-  }
-}
-
-@media (max-width: 1040px) {
-  .count {
-    display: none;
-  }
-}
-
-@media (max-width: 900px) {
-  /* Icons carry the buttons from here down. */
-  .menu-label {
-    display: none;
-  }
-
-  .menu-trigger {
-    padding: 7px 10px;
-  }
-}
-
 @media (max-width: 760px) {
   .desktop-only {
     display: none;
@@ -1823,14 +1829,22 @@ body {
     display: block;
   }
 
-  .search-box.open .search {
-    width: 150px;
+  .header {
+    gap: 6px;
+  }
+
+  .search-box .search {
+    width: 72px;
+  }
+
+  .search-box .search:focus {
+    width: 140px;
   }
 
   .nav-filters,
   .nav-actions {
-    margin-left: 0;
-    padding-left: 8px;
+    padding-left: 6px;
+    border-left: none;
   }
 }
 

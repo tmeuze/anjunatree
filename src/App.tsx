@@ -17,7 +17,9 @@ import { LABEL_KEYS, LABEL_META, layoutCatalog, loadCatalog, labelVar } from './
 import type { CatalogLayout } from './data'
 import { applySettings, loadSettings, saveSettings, scaleOf } from './settings'
 import type { Settings } from './settings'
-import { applyTheme, getTheme } from './themes'
+import { applyTheme, getTheme, THEMES } from './themes'
+import type { ThemeId } from './themes'
+import { SlidersIcon } from './Icons'
 import * as spotify from './spotify'
 import { useSpotify } from './useSpotify'
 import { useUpdateFlow } from './useUpdateFlow'
@@ -250,6 +252,13 @@ export default function App() {
     }
   }, [radio, layout, selected, isActive])
 
+  const setThemeId = useCallback((id: ThemeId) => {
+    setSettings((s) => ({ ...s, theme: id }))
+  }, [])
+  const toggleMode = useCallback(() => {
+    setThemeId(theme.mode === 'light' ? 'black-room-boy' : 'sun-and-moon')
+  }, [theme.mode, setThemeId])
+
   const toggleLabel = useCallback((key: LabelKey) => {
     setEnabled((prev) => {
       const next = new Set(prev)
@@ -281,7 +290,7 @@ export default function App() {
           </span>
         </div>
 
-        <div className="nav-section">
+        <div className="nav-section nav-search">
           <SearchBox value={query} onChange={setQuery} />
         </div>
 
@@ -308,7 +317,7 @@ export default function App() {
 
           <Menu
             label="Filters"
-            icon="◑"
+            icon={<SlidersIcon />}
             align="right"
             title="Labels and map view"
             badge={
@@ -338,6 +347,9 @@ export default function App() {
                     close()
                   }}
                 >
+                  <span className="menu-item-icon" aria-hidden="true">
+                    ▤
+                  </span>
                   Labels
                 </button>
                 <button
@@ -347,8 +359,47 @@ export default function App() {
                     close()
                   }}
                 >
+                  <span className="menu-item-icon" aria-hidden="true">
+                    ∿
+                  </span>
                   Spectrum
                 </button>
+              </>
+            )}
+          </Menu>
+
+          <Menu label="Theme" icon="◑" align="right" title="Theme and light/dark mode">
+            {(close) => (
+              <>
+                <div className="menu-heading">Light / dark</div>
+                <button
+                  className="menu-item"
+                  onClick={() => {
+                    toggleMode()
+                    close()
+                  }}
+                >
+                  {theme.mode === 'light' ? '☾ Switch to dark' : '☀ Switch to light'}
+                </button>
+
+                <div className="menu-heading">Theme</div>
+                {THEMES.map((t) => (
+                  <button
+                    key={t.id}
+                    className={`menu-item theme-menu-item${settings.theme === t.id ? ' on' : ''}`}
+                    onClick={() => {
+                      setThemeId(t.id)
+                      close()
+                    }}
+                  >
+                    <span className="theme-menu-swatch">
+                      <i style={{ background: t.colors.anjunabeats }} />
+                      <i style={{ background: t.colors.anjunadeep }} />
+                      <i style={{ background: t.colors.reflections }} />
+                    </span>
+                    {t.name}
+                  </button>
+                ))}
               </>
             )}
           </Menu>
@@ -364,7 +415,7 @@ export default function App() {
             <span className="menu-icon" aria-hidden="true">
               {radio ? '■' : '▸'}
             </span>
-            <span className="menu-label">On Rotation</span>
+            <span className="menu-label">Surprise Me</span>
           </button>
 
           <button
@@ -395,21 +446,29 @@ export default function App() {
               onConnectSpotify={() => {
                 setInfoTab(null)
                 updateFlow.dismiss()
-                if (spotify.isConfigured()) spotify.beginLogin().catch(() => {})
-                else setShowSettings(true)
+                // Already connected: open Settings to show that, rather than
+                // silently restarting a login the listener already completed.
+                if (spotifyState.session || !spotify.isConfigured()) setShowSettings(true)
+                else spotify.beginLogin().catch(() => {})
               }}
+              spotifyConnected={Boolean(spotifyState.session)}
             />
           </div>
 
           <button
-            className="menu-trigger desktop-only"
+            className={`menu-trigger desktop-only${spotifyState.session ? ' connected' : ''}`}
             onClick={() => setShowSettings(true)}
-            title="Themes, text size, accessibility, Spotify"
+            title={
+              spotifyState.session
+                ? 'Themes, text size, accessibility, Spotify (connected)'
+                : 'Themes, text size, accessibility, Spotify'
+            }
           >
             <span className="menu-icon" aria-hidden="true">
               ⚙
             </span>
             <span className="menu-label">Settings</span>
+            {spotifyState.session && <span className="menu-dot" aria-hidden="true" />}
           </button>
 
           {/* Everything above, folded into one control on a narrow screen. */}
@@ -425,7 +484,10 @@ export default function App() {
                       close()
                     }}
                   >
-                    {radio ? 'Stop On Rotation' : 'Start On Rotation'}
+                    <span className="menu-item-icon" aria-hidden="true">
+                      {radio ? '■' : '▸'}
+                    </span>
+                    {radio ? 'Stop Surprise Me' : 'Start Surprise Me'}
                   </button>
                   <button
                     className={`menu-item${showLatest ? ' on' : ''}`}
@@ -434,6 +496,9 @@ export default function App() {
                       close()
                     }}
                   >
+                    <span className="menu-item-icon" aria-hidden="true">
+                      ✦
+                    </span>
                     Release Tracker
                   </button>
 
@@ -445,7 +510,11 @@ export default function App() {
                       close()
                     }}
                   >
+                    <span className="menu-item-icon" aria-hidden="true">
+                      ⚙
+                    </span>
                     Settings
+                    {spotifyState.session && <span className="menu-dot" aria-hidden="true" />}
                   </button>
                   <button
                     className="menu-item"
@@ -454,6 +523,9 @@ export default function App() {
                       close()
                     }}
                   >
+                    <span className="menu-item-icon" aria-hidden="true">
+                      ?
+                    </span>
                     About AnjunaTree
                   </button>
                 </>

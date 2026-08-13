@@ -22,7 +22,7 @@ active filters.
   account needed. Connect Spotify Premium and the same releases play in full.
 - **Constellations** — click a release and every other release by that artist
   lights up, connected chronologically across the whole catalogue.
-- **On Rotation** — press play and it walks the map for you, one preview at a
+- **Surprise Me** — press play and it walks the map for you, one preview at a
   time, chronologically or through the constellation you're viewing.
 - **Release Tracker** — a changelog-style feed of what's just come out and
   what's announced but not released yet.
