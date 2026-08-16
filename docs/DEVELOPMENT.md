@@ -239,8 +239,14 @@ If `npm audit` fails a build:
       listeners (`src/spotifyPlayer.ts`, `src/useSpotify.ts`). Falls back to
       previews for free accounts and for anything Spotify doesn't carry.
 - [ ] Apple MusicKit JS as a second full-playback provider.
-- [ ] Personalised map: light up the listener's saved releases, and export a
-      constellation as a playlist.
+- [x] Personalised map: an opt-in Settings toggle rings releases matching the
+      listener's saved Spotify albums/tracks (`spotify.fetchSavedReleaseKeys`,
+      matched release-level in `App.tsx`'s `savedNodeIds`), and any traced
+      constellation can be exported as a private Spotify playlist
+      (`spotify.exportPlaylist` — one best-matched track per release, not a
+      full tracklist per release). Needs the `user-library-read` and
+      `playlist-modify-private` scopes, so already-connected listeners see a
+      one-time reconnect prompt.
 - [ ] Extended-family labels (with the artists' blessing where possible),
       grouped by the parent company's own taxonomy — see
       `src/familyLabels.ts`: *label services* clients of Involved Group

@@ -18,6 +18,10 @@ export interface Settings {
   reduceMotion: boolean
   /** Draw bigger marks on the map — helps low-vision users hit and see them. */
   largeMarks: boolean
+  /** Ring saved Spotify releases on the map. Off by default — connecting
+   * Spotify shouldn't itself change what the map looks like without an
+   * explicit opt-in. */
+  showSavedReleases: boolean
 }
 
 export const DEFAULT_SETTINGS: Settings = {
@@ -26,6 +30,7 @@ export const DEFAULT_SETTINGS: Settings = {
   highContrast: false,
   reduceMotion: false,
   largeMarks: false,
+  showSavedReleases: false,
 }
 
 const KEY = 'anjunatree:settings'

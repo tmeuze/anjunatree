@@ -119,8 +119,9 @@ export default function SettingsPanel({
 
                 {sp.needsReconnect ? (
                   <p className="set-error">
-                    This sign-in predates full-track playback. Reconnect once to grant
-                    the playback permission — nothing else changes.
+                    This sign-in predates full-track playback, saved-release matching,
+                    and playlist export. Reconnect once to grant those — nothing else
+                    changes.
                   </p>
                 ) : sp.profile && sp.profile.product !== 'premium' ? (
                   <p className="set-hint">
@@ -139,6 +140,21 @@ export default function SettingsPanel({
                 ) : null}
 
                 {sp.error && <p className="set-error">{sp.error}</p>}
+
+                {!sp.needsReconnect && (
+                  <Toggle
+                    label="Light up my saved releases"
+                    hint={
+                      sp.loadingLibrary
+                        ? 'Checking your saved albums and tracks…'
+                        : sp.savedKeys
+                          ? `Rings ${sp.savedKeys.size.toLocaleString()} saved release${sp.savedKeys.size === 1 ? '' : 's'} you have that are also on this map.`
+                          : 'Rings releases from your saved albums and tracks on the map.'
+                    }
+                    checked={settings.showSavedReleases}
+                    onChange={(v) => set('showSavedReleases', v)}
+                  />
+                )}
 
                 <div className="set-buttons">
                   {sp.needsReconnect && (
@@ -162,6 +178,8 @@ export default function SettingsPanel({
                 </p>
                 <ul className="set-list">
                   <li>Full-length tracks instead of previews (needs Premium)</li>
+                  <li>Your saved releases lit up on the map, if you turn that on</li>
+                  <li>Turn any artist's constellation into a playlist</li>
                 </ul>
                 <button
                   className="set-button primary"

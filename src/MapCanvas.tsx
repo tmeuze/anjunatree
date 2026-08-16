@@ -22,6 +22,9 @@ interface Props {
   highContrast: boolean
   reduceMotion: boolean
   largeMarks: boolean
+  /** Release ids matching the listener's saved Spotify albums/tracks, when
+   * that's turned on; null when off or nothing to show yet. */
+  savedNodeIds: Set<string> | null
 }
 
 const MAX_R = 7.5
@@ -45,6 +48,7 @@ export default function MapCanvas({
   highContrast,
   reduceMotion,
   largeMarks,
+  savedNodeIds,
 }: Props) {
   const containerRef = useRef<HTMLDivElement>(null)
   const canvasRef = useRef<HTMLCanvasElement>(null)
@@ -59,9 +63,9 @@ export default function MapCanvas({
     userZoomed: false,
     viewMix: 0, // 0 = lane view, 1 = spectrum view; eased toward the target each frame
     scheduleDraw: () => {},
-    props: { layout, view, isActive, constellation, selectedId, onSelect, colors, fontScale, highContrast, reduceMotion, largeMarks },
+    props: { layout, view, isActive, constellation, selectedId, onSelect, colors, fontScale, highContrast, reduceMotion, largeMarks, savedNodeIds },
   })
-  stateRef.current.props = { layout, view, isActive, constellation, selectedId, onSelect, colors, fontScale, highContrast, reduceMotion, largeMarks }
+  stateRef.current.props = { layout, view, isActive, constellation, selectedId, onSelect, colors, fontScale, highContrast, reduceMotion, largeMarks, savedNodeIds }
 
   // Hit-testing uses the *target* view's resting positions.
   useEffect(() => {
@@ -196,6 +200,17 @@ export default function MapCanvas({
         ctx.stroke()
         ctx.shadowBlur = 0
       }
+      // Saved-releases rings, under the hover/selection rings so those still
+      // read clearly if they land on the same node. Gold, echoing the
+      // milestone markers — both mean "something worth noticing here".
+      const saved = st.props.savedNodeIds
+      if (saved?.size) {
+        for (const n of layout.nodes) {
+          if (!saved.has(n.rel.id) || !isActive(n)) continue
+          ring(n, `rgba(${colors.milestone}, 0.85)`, `rgba(${colors.milestone}, 0.5)`)
+        }
+      }
+
       if (st.hovered && st.hovered.rel.id !== selectedId)
         ring(st.hovered, `rgba(${colors.constellation}, 0.75)`, colors[st.hovered.lane])
       if (selected) ring(selected, colors.ink, colors[selected.lane])

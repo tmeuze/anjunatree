@@ -15,6 +15,11 @@ export interface SpotifyState {
   connecting: boolean
   error: string | null
   playback: PlaybackState | null
+  /** Match keys for every saved album/track's release, once loaded — null
+   * while loading or signed out, so callers can tell "no matches yet" apart
+   * from "haven't checked". */
+  savedKeys: Set<string> | null
+  loadingLibrary: boolean
   /** Resolve and play a full track. False means "couldn't — use the preview". */
   playFull: (artist: string, title: string) => Promise<boolean>
   pause: () => void
@@ -22,6 +27,11 @@ export interface SpotifyState {
   setMuted: (muted: boolean) => void
   disconnect: () => void
   refresh: () => void
+  exportPlaylist: (
+    name: string,
+    description: string,
+    releases: { artist: string; title: string }[],
+  ) => Promise<{ url: string; matched: number; total: number }>
 }
 
 export function useSpotify(): SpotifyState {
@@ -30,6 +40,8 @@ export function useSpotify(): SpotifyState {
   const [playback, setPlayback] = useState<PlaybackState | null>(null)
   const [connecting, setConnecting] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [savedKeys, setSavedKeys] = useState<Set<string> | null>(null)
+  const [loadingLibrary, setLoadingLibrary] = useState(false)
   const playerRef = useRef<ConnectedPlayer | null>(null)
   // Mirrors playerRef as state: a ref alone would attach the player without
   // ever re-rendering, so canPlayFull would stay false and playback would
@@ -54,6 +66,49 @@ export function useSpotify(): SpotifyState {
     }
   }, [session])
 
+  // Sync saved releases once per connection, so the map can light them up.
+  // Skipped until reconnect grants the library scope; cleared on sign-out
+  // rather than left stale.
+  //
+  // No "already synced" ref guard here (unlike the player-attach effect
+  // below) — deliberately: that pattern doesn't reset its guard on cleanup,
+  // so under StrictMode's dev-only double-invoke (mount, cleanup, mount
+  // again) the *second, real* run sees the guard already set by the first
+  // and skips starting a new attempt, while the first attempt's own result
+  // lands on a closure whose `alive` is already false. Net effect: it never
+  // resolves, forever. Relying only on `alive` plus the dependency array —
+  // same as the profile-fetch effect above — costs one harmless duplicate
+  // request in dev and has no such failure mode.
+  useEffect(() => {
+    if (!session) {
+      setSavedKeys(null)
+      return
+    }
+    if (needsReconnect) return
+    let alive = true
+    setLoadingLibrary(true)
+    setStatus('spotify-library', 'progress', 'Checking your saved releases…')
+    spotify
+      .fetchSavedReleaseKeys(session)
+      .then((keys) => {
+        if (!alive) return
+        setSavedKeys(keys)
+        clearStatus('spotify-library')
+      })
+      .catch((e: unknown) => {
+        if (!alive) return
+        setStatus(
+          'spotify-library',
+          'error',
+          e instanceof Error ? e.message : 'Could not read your saved releases.',
+        )
+      })
+      .finally(() => alive && setLoadingLibrary(false))
+    return () => {
+      alive = false
+    }
+  }, [session, needsReconnect])
+
   // Attach a player once — and only once — the account can actually use one.
   //
   // The guard is a ref, not the `connecting` state. Depending on state here
@@ -61,6 +116,13 @@ export function useSpotify(): SpotifyState {
   // very attempt it had just started: the promise then resolved into a
   // cancelled closure, setConnecting(false) never ran, and the UI sat on
   // "connecting" forever. A ref keeps the guard out of the dependency list.
+  //
+  // The cleanup resets the guard, too — found while chasing the same bug in
+  // the saved-releases sync effect above: under StrictMode's dev-only
+  // mount/cleanup/mount, an unreset guard lets the *first* (about-to-be-
+  // cancelled) attempt claim the guard while the *second, real* run sees it
+  // already set and skips connecting entirely — the player then never
+  // attaches on a fresh session until something else changes the deps.
   const attemptedRef = useRef(false)
   useEffect(() => {
     if (!session || needsReconnect || !premium) return
@@ -104,6 +166,7 @@ export function useSpotify(): SpotifyState {
 
     return () => {
       cancelled = true
+      attemptedRef.current = false
     }
   }, [session, needsReconnect, premium])
 
@@ -173,6 +236,15 @@ export function useSpotify(): SpotifyState {
     setError(null)
   }, [])
 
+  const exportPlaylist = useCallback(
+    async (name: string, description: string, releases: { artist: string; title: string }[]) => {
+      const live = await spotify.validSession()
+      if (!live) throw new Error('Reconnect Spotify to export a playlist.')
+      return spotify.exportPlaylist(live, name, description, releases)
+    },
+    [],
+  )
+
   return {
     session,
     profile,
@@ -181,11 +253,14 @@ export function useSpotify(): SpotifyState {
     connecting,
     error,
     playback,
+    savedKeys,
+    loadingLibrary,
     playFull,
     pause,
     resume,
     setMuted,
     disconnect,
     refresh,
+    exportPlaylist,
   }
 }

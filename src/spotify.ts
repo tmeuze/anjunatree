@@ -20,6 +20,10 @@ const STATE_KEY = 'anjunatree:spotify:state'
 // `streaming` is what the Web Playback SDK requires, and it is Premium-only —
 // Spotify will grant the scope to a free account but refuse to create a player
 // for it, so the app checks `product` too and falls back to previews.
+// `user-library-read` lights up saved releases on the map; `playlist-modify-
+// private` is for exporting a constellation as a playlist — private only, by
+// design, so exporting never posts to a listener's public profile without
+// them choosing to make it public afterward themselves, in Spotify's own UI.
 // Adding scopes invalidates tokens issued before them, hence needsReconnect().
 const SCOPES = [
   'user-read-email',
@@ -27,9 +31,14 @@ const SCOPES = [
   'streaming',
   'user-read-playback-state',
   'user-modify-playback-state',
+  'user-library-read',
+  'playlist-modify-private',
 ]
 
-const PLAYBACK_SCOPE = 'streaming'
+// Scopes a stored session must have, beyond the baseline sign-in ones, for
+// every feature to work. Anything missing means "reconnect once" rather than
+// "broken" — see needsReconnect().
+const REQUIRED_SCOPES = ['streaming', 'user-library-read', 'playlist-modify-private']
 
 export interface Session {
   accessToken: string
@@ -40,12 +49,15 @@ export interface Session {
 }
 
 /**
- * True when the stored session predates the playback scopes. The token still
- * works for reading, so this isn't an error — the user just has to reconnect
- * once before full tracks can play.
+ * True when the stored session predates a scope this app now needs (full
+ * playback, saved-releases matching, or playlist export). The token still
+ * works for reading the basics, so this isn't an error — the listener just
+ * has to reconnect once to grant the rest.
  */
-export const needsReconnect = (s: Session): boolean =>
-  !s.scope.split(' ').includes(PLAYBACK_SCOPE)
+export const needsReconnect = (s: Session): boolean => {
+  const granted = s.scope.split(' ')
+  return REQUIRED_SCOPES.some((scope) => !granted.includes(scope))
+}
 
 export interface Profile {
   displayName: string
@@ -242,7 +254,9 @@ export function logout(): void {
 }
 
 
-const norm = (v: string) =>
+/** Exported so the catalogue side of matching (App.tsx) normalises releases
+ * the exact same way saved albums/tracks are normalised here. */
+export const norm = (v: string) =>
   v
     .toLowerCase()
     .normalize('NFKD')
@@ -300,4 +314,124 @@ export async function findTrackUri(
   }
   if (!best) return null
   return { uri: best.track.uri, durationMs: best.track.duration_ms }
+}
+
+/** `${normalised artist} :: ${normalised album title}` — the key both saved
+ * releases and catalogue releases are matched on. Exported so App.tsx builds
+ * catalogue-side keys identically. */
+export const releaseKey = (artist: string, title: string): string =>
+  `${norm(artist)} :: ${norm(title)}`
+
+interface SpotifyAlbumRef {
+  name: string
+  artists: { name: string }[]
+}
+
+const PAGE_SIZE = 50
+// A hard stop, not a realistic ceiling: 6,000 saved items is generous for
+// matching against a ~3,000-release catalogue, and it bounds how many
+// requests one library sync can ever make.
+const MAX_PAGES = 120
+
+async function fetchAllPages(
+  session: Session,
+  path: string,
+): Promise<SpotifyAlbumRef[]> {
+  const out: SpotifyAlbumRef[] = []
+  let url = `${API}${path}?limit=${PAGE_SIZE}`
+  for (let page = 0; url && page < MAX_PAGES; page++) {
+    const res = await fetch(url, { headers: { Authorization: `Bearer ${session.accessToken}` } })
+    if (!res.ok) break
+    const json = (await res.json()) as {
+      items: { album?: SpotifyAlbumRef; track?: { album: SpotifyAlbumRef } }[]
+      next: string | null
+    }
+    for (const item of json.items) {
+      const album = item.album ?? item.track?.album
+      if (album) out.push(album)
+    }
+    url = json.next ?? ''
+  }
+  return out
+}
+
+/**
+ * Every saved album, plus the parent album of every saved track, as match
+ * keys — this is release-level (matching AnjunaTree's own granularity), not
+ * track-level, so a single saved track lights up its whole release on the
+ * map. Two requests' worth of pages in parallel; Spotify's rate limit is
+ * generous enough that a library sync this size is a non-event.
+ */
+export async function fetchSavedReleaseKeys(session: Session): Promise<Set<string>> {
+  const [albums, trackAlbums] = await Promise.all([
+    fetchAllPages(session, '/me/albums'),
+    fetchAllPages(session, '/me/tracks'),
+  ])
+  const keys = new Set<string>()
+  for (const album of [...albums, ...trackAlbums]) {
+    for (const artist of album.artists) keys.add(releaseKey(artist.name, album.name))
+  }
+  return keys
+}
+
+async function getUserId(session: Session): Promise<string> {
+  const res = await fetch(`${API}/me`, {
+    headers: { Authorization: `Bearer ${session.accessToken}` },
+  })
+  if (!res.ok) throw new Error(`Couldn't read the Spotify account (${res.status}).`)
+  const json = (await res.json()) as { id: string }
+  return json.id
+}
+
+/**
+ * Create a private playlist and fill it with the best-matched Spotify track
+ * for each (artist, title) pair — one track per release, found the same way
+ * `findTrackUri` matches a single preview, not a full tracklist per release
+ * (that would mean an iTunes lookup per release just to build the search
+ * queries, for a feature that's meant to be a quick "take this with you").
+ * Releases with no confident match are silently skipped; the caller reports
+ * how many of the total actually made it in.
+ */
+export async function exportPlaylist(
+  session: Session,
+  name: string,
+  description: string,
+  releases: { artist: string; title: string }[],
+): Promise<{ url: string; matched: number; total: number }> {
+  const userId = await getUserId(session)
+  const matches: string[] = []
+  for (const rel of releases) {
+    const match = await findTrackUri(session, rel.artist, rel.title)
+    if (match) matches.push(match.uri)
+  }
+  const createRes = await fetch(`${API}/users/${encodeURIComponent(userId)}/playlists`, {
+    method: 'POST',
+    headers: {
+      Authorization: `Bearer ${session.accessToken}`,
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({ name, description, public: false }),
+  })
+  if (!createRes.ok) {
+    throw new Error(`Couldn't create the playlist (${createRes.status}).`)
+  }
+  const playlist = (await createRes.json()) as { id: string; external_urls: { spotify: string } }
+
+  // The add-items endpoint caps at 100 URIs per call.
+  for (let i = 0; i < matches.length; i += 100) {
+    const batch = matches.slice(i, i + 100)
+    const addRes = await fetch(`${API}/playlists/${playlist.id}/tracks`, {
+      method: 'POST',
+      headers: {
+        Authorization: `Bearer ${session.accessToken}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ uris: batch }),
+    })
+    if (!addRes.ok) {
+      throw new Error(`Playlist created, but adding tracks failed (${addRes.status}).`)
+    }
+  }
+
+  return { url: playlist.external_urls.spotify, matched: matches.length, total: releases.length }
 }

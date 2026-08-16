@@ -4,7 +4,9 @@ import type { ReleaseMatch } from './itunes'
 import { LABEL_META, labelVar } from './data'
 import { SHAPE_LABEL } from './shapes'
 import { REPO_URL } from './constants'
+import { setStatus } from './status'
 import type { AlbumTrack, MapNode, NowPlaying } from './types'
+import type { SpotifyState } from './useSpotify'
 
 export const VARIOUS_ARTISTS_MBID = '89ad4ac3-39f7-470e-963a-56509c546377'
 
@@ -17,6 +19,8 @@ const GENRE_PLACEMENT_VOTING_ENABLED = false
 interface Props {
   node: MapNode
   constellationId: string | null
+  /** chronological path of the highlighted artist's releases, empty when off */
+  constellation: MapNode[]
   radio: boolean
   nowPlaying: NowPlaying | null
   playerPaused: boolean
@@ -24,6 +28,7 @@ interface Props {
   onRadioNext: () => void
   onPickArtist: (artistId: string) => void
   onClose: () => void
+  spotify: SpotifyState
 }
 
 type MatchState =
@@ -41,6 +46,7 @@ const fmtDuration = (ms: number | null) => {
 export default function ReleasePanel({
   node,
   constellationId,
+  constellation,
   radio,
   nowPlaying,
   playerPaused,
@@ -48,9 +54,11 @@ export default function ReleasePanel({
   onRadioNext,
   onPickArtist,
   onClose,
+  spotify,
 }: Props) {
   const [match, setMatch] = useState<MatchState>({ status: 'loading' })
   const [tracks, setTracks] = useState<AlbumTrack[] | null>(null)
+  const [exporting, setExporting] = useState(false)
   const autoplayedFor = useRef<string | null>(null)
   const { rel } = node
 
@@ -66,6 +74,55 @@ export default function ReleasePanel({
     })
     return out
   }, [rel])
+
+  // The traced artist's own name, as credited on whichever constellation
+  // release has them — used for both the playlist title and as the artist
+  // half of every search query, so a compilation's "Various Artists" credit
+  // on `rel.artist` never leaks into the matching.
+  const constellationArtistName = useMemo(() => {
+    if (!constellationId) return null
+    for (const n of constellation) {
+      const i = n.rel.artistIds.indexOf(constellationId)
+      if (i >= 0) return n.rel.artists[i] ?? n.rel.artist
+    }
+    return null
+  }, [constellation, constellationId])
+
+  const canExportPlaylist =
+    Boolean(spotify.session) && !spotify.needsReconnect && constellation.length > 1
+
+  const exportConstellationPlaylist = async () => {
+    if (!constellationArtistName || exporting) return
+    setExporting(true)
+    setStatus('spotify-export', 'progress', 'Building your playlist…')
+    try {
+      const releases = constellation.map((n) => ({
+        artist: constellationArtistName,
+        title: n.rel.title,
+      }))
+      const result = await spotify.exportPlaylist(
+        `${constellationArtistName} — AnjunaTree`,
+        `Every ${constellationArtistName} release on the AnjunaTree map. anjunatree.com`,
+        releases,
+      )
+      setStatus(
+        'spotify-export',
+        'info',
+        result.matched === result.total
+          ? `Playlist created with all ${result.matched} releases.`
+          : `Playlist created with ${result.matched} of ${result.total} releases — Spotify doesn't carry the rest.`,
+      )
+      window.open(result.url, '_blank', 'noreferrer')
+    } catch (e) {
+      setStatus(
+        'spotify-export',
+        'error',
+        e instanceof Error ? e.message : 'Could not export the playlist.',
+      )
+    } finally {
+      setExporting(false)
+    }
+  }
 
   useEffect(() => {
     let alive = true
@@ -203,6 +260,16 @@ export default function ReleasePanel({
           </button>
         ))}
       </div>
+
+      {canExportPlaylist && (
+        <div className="panel-genre-vote">
+          <button className="set-button" onClick={exportConstellationPlaylist} disabled={exporting}>
+            {exporting
+              ? 'Building playlist…'
+              : `Export ${constellationArtistName}'s constellation as a playlist`}
+          </button>
+        </div>
+      )}
 
       {GENRE_PLACEMENT_VOTING_ENABLED && (
         <>

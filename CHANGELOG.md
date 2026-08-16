@@ -5,6 +5,37 @@ this list — what someone would actually notice, not every commit. This file
 is the fuller, developer-facing version; see `git log` for the complete
 history.
 
+## 2026-08-16 — Make it yours
+
+- **Personalised map.** Two new Spotify scopes (`user-library-read`,
+  `playlist-modify-private`) power two features: an opt-in Settings toggle
+  that rings map releases matching the listener's saved albums/tracks
+  (`spotify.fetchSavedReleaseKeys`, matched release-level via a shared
+  `artist :: title` key so a saved track lights up its whole release), and
+  an "Export as playlist" button on any traced constellation
+  (`spotify.exportPlaylist`) that creates a private playlist with the
+  best-matched Spotify track per release — one track per release via the
+  same search-and-score matching `findTrackUri` already used for preview
+  fallback, not a full tracklist per release (that would mean an iTunes
+  lookup per release just to build the search queries). Already-connected
+  listeners get a one-time reconnect prompt, same pattern as the earlier
+  streaming-scope addition.
+- Off by default: connecting Spotify doesn't itself change what the map
+  looks like. Ringing saved releases needs an explicit opt-in
+  (`settings.showSavedReleases`); the toggle only appears once the account
+  has granted the scope.
+- **Found and fixed a real bug while building this**, not specific to the
+  new feature: the saved-releases sync effect used a "run once" ref guard
+  (`if (alreadySynced.current) return`) that never got reset on cleanup.
+  Under React 18 StrictMode's dev-only mount→cleanup→mount, that let the
+  *first* (about-to-be-cancelled) attempt claim the guard while the
+  *second, real* mount saw it already set and skipped starting a fresh
+  attempt — so the sync silently hung forever on every first load in dev.
+  The pre-existing Spotify player-connect effect had the exact same
+  pattern and, on inspection, the exact same latent bug; fixed both by
+  resetting the guard ref in the effect's cleanup rather than only on
+  success/failure.
+
 ## 2026-08-16 — Sharper edges
 
 - **Fixed the brand mark's trunk and timeline axis rendering invisible in

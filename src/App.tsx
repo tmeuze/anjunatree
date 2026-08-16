@@ -202,6 +202,23 @@ export default function App() {
       .sort((a, b) => a.time - b.time)
   }, [layout, constellationId])
 
+  // Which releases match the listener's saved Spotify albums/tracks, by the
+  // same release-level key spotify.ts builds from the saved side — computed
+  // once per catalogue/library pair, not per animation frame, since
+  // MapCanvas re-checks this on every draw call.
+  const savedNodeIds = useMemo(() => {
+    if (!layout || !settings.showSavedReleases || !spotifyState.savedKeys) return null
+    const saved = spotifyState.savedKeys
+    const ids = new Set<string>()
+    for (const n of layout.nodes) {
+      const hit = n.rel.artists.some((artist) =>
+        saved.has(spotify.releaseKey(artist, n.rel.title)),
+      )
+      if (hit) ids.add(n.rel.id)
+    }
+    return ids
+  }, [layout, settings.showSavedReleases, spotifyState.savedKeys])
+
   // Radio: after each release's preview, step to the next one — through the
   // current constellation if the selection is part of it, otherwise
   // chronologically through everything the filters allow.
@@ -559,6 +576,7 @@ export default function App() {
               highContrast={settings.highContrast}
               reduceMotion={settings.reduceMotion}
               largeMarks={settings.largeMarks}
+              savedNodeIds={savedNodeIds}
             />
             {view === 'spectrum' && (
               <div className="spectrum-note">
@@ -578,6 +596,7 @@ export default function App() {
             <ReleasePanel
               node={selected}
               constellationId={constellationId}
+              constellation={constellation}
               radio={radio}
               nowPlaying={nowPlaying}
               playerPaused={playerPaused}
@@ -585,6 +604,7 @@ export default function App() {
               onRadioNext={radioNext}
               onPickArtist={setConstellationId}
               onClose={() => selectNode(null)}
+              spotify={spotifyState}
             />
           )}
         </div>

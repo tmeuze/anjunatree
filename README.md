@@ -28,6 +28,9 @@ active filters.
   what's announced but not released yet.
 - **Shareable links** — the URL always encodes your view, search, filters, and
   selection, so any moment on the map is a link you can send someone.
+- **Make it yours** — connect Spotify and, if you turn it on, your saved
+  albums and tracks get rung on the map; any artist's constellation can be
+  exported as a private Spotify playlist.
 - **Themes & accessibility** — four themes named after the music, four text
   sizes, high contrast, larger map marks, and reduced motion.
 - **Installable** — add it to your home screen and the whole map works
