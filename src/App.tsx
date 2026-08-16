@@ -255,9 +255,6 @@ export default function App() {
   const setThemeId = useCallback((id: ThemeId) => {
     setSettings((s) => ({ ...s, theme: id }))
   }, [])
-  const toggleMode = useCallback(() => {
-    setThemeId(theme.mode === 'light' ? 'black-room-boy' : 'sun-and-moon')
-  }, [theme.mode, setThemeId])
 
   const toggleLabel = useCallback((key: LabelKey) => {
     setEnabled((prev) => {
@@ -368,20 +365,9 @@ export default function App() {
             )}
           </Menu>
 
-          <Menu label="Theme" icon="◑" align="right" title="Theme and light/dark mode">
+          <Menu label="Theme" icon="◑" align="right" title="Theme">
             {(close) => (
               <>
-                <div className="menu-heading">Light / dark</div>
-                <button
-                  className="menu-item"
-                  onClick={() => {
-                    toggleMode()
-                    close()
-                  }}
-                >
-                  {theme.mode === 'light' ? '☾ Switch to dark' : '☀ Switch to light'}
-                </button>
-
                 <div className="menu-heading">Theme</div>
                 {THEMES.map((t) => (
                   <button
