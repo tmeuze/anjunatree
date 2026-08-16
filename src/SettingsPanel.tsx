@@ -1,7 +1,5 @@
 import { FONT_SCALES } from './settings'
 import type { Settings } from './settings'
-import { THEMES } from './themes'
-import type { ThemeId } from './themes'
 import * as spotify from './spotify'
 import type { SpotifyState } from './useSpotify'
 
@@ -64,34 +62,9 @@ export default function SettingsPanel({
         </div>
 
         <div className="settings-body">
-          <section>
-            <h3>Theme</h3>
-            <p className="set-hint">
-              Every palette is checked so the three label colours stay
-              distinguishable — including for colour-blind viewers.
-            </p>
-            <div className="theme-grid">
-              {THEMES.map((t) => (
-                <button
-                  key={t.id}
-                  className={`theme-card${settings.theme === t.id ? ' on' : ''}`}
-                  onClick={() => set('theme', t.id as ThemeId)}
-                  aria-pressed={settings.theme === t.id}
-                >
-                  <span
-                    className="theme-swatch"
-                    style={{ background: t.colors.surface, borderColor: t.colors.hairline }}
-                  >
-                    <i style={{ background: t.colors.anjunabeats }} />
-                    <i style={{ background: t.colors.anjunadeep }} />
-                    <i style={{ background: t.colors.reflections }} />
-                  </span>
-                  <span className="theme-name">{t.name}</span>
-                  <span className="set-hint">{t.blurb}</span>
-                </button>
-              ))}
-            </div>
-          </section>
+          <p className="set-hint">
+            Theme is in the header now — the ◑ button, next to Filters.
+          </p>
 
           <section>
             <h3>Text size</h3>

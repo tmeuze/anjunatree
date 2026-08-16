@@ -1,0 +1,24 @@
+version: 2
+updates:
+  # Keeps package.json/package-lock.json current. Grouped into one weekly PR
+  # rather than one-per-package so it doesn't spam the repo, and CI (ci.yml)
+  # has to pass before any of these can merge.
+  - package-ecosystem: npm
+    directory: /
+    schedule:
+      interval: weekly
+    groups:
+      npm-dependencies:
+        patterns:
+          - '*'
+    commit-message:
+      prefix: chore-bump
+
+  # Keeps the GitHub Actions themselves (actions/checkout, actions/setup-node,
+  # etc.) current — those are dependencies too, just not npm ones.
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: weekly
+    commit-message:
+      prefix: chore-bump

@@ -84,3 +84,21 @@ The app must stay a **static site with no server component** and **no secrets
 in the client bundle**. See the "Secrets" section of
 [docs/DEVELOPMENT.md](docs/DEVELOPMENT.md) before adding any credential or
 API integration.
+
+## Keep the changelog current
+
+If a change is something a listener would actually notice, it needs an entry
+in **both** places, added in the same commit as the change:
+
+- `src/changelog.ts` — the short version shown in-app (About → What's new).
+  Bump `APP_VERSION` alongside it; that's what tells a returning visitor
+  there's something new.
+- `CHANGELOG.md` — the fuller, developer-facing version, with the *why*
+  behind a decision and not just the *what*. This is the project's record of
+  its own history — including reverts and course-corrections, not just the
+  parts that worked the first time — so don't sand those down after the
+  fact.
+
+Internal refactors, dependency bumps, and anything with no visible effect
+don't need a `changelog.ts` entry, but a one-line `CHANGELOG.md` note is
+still worth it if a future contributor would otherwise wonder why.

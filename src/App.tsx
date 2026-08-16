@@ -565,6 +565,14 @@ export default function App() {
                 curated spectrum — label + artist, not per-track data
               </div>
             )}
+            {query.trim() && matchCount === 0 && (
+              <div className="empty-note">
+                <p>No releases match &ldquo;{query.trim()}&rdquo;.</p>
+                <button className="set-button" onClick={() => setQuery('')}>
+                  Clear search
+                </button>
+              </div>
+            )}
           </div>
           {selected && (
             <ReleasePanel

@@ -28,12 +28,41 @@ active filters.
   what's announced but not released yet.
 - **Shareable links** — the URL always encodes your view, search, filters, and
   selection, so any moment on the map is a link you can send someone.
-- **Suggest a genre placement** — the Spectrum axis is hand-curated, not
-  measured; every release panel has a button to push back on where it sits.
 - **Themes & accessibility** — four themes named after the music, four text
   sizes, high contrast, larger map marks, and reduced motion.
 - **Installable** — add it to your home screen and the whole map works
   offline.
+
+## Credits
+
+AnjunaTree is built almost entirely on other people's work. In rough order of
+how load-bearing they are:
+
+- **[MusicBrainz](https://musicbrainz.org)** — the entire catalogue (every
+  release, artist, and date) is community-maintained data from MusicBrainz,
+  used under [CC0](https://musicbrainz.org/doc/About/Data_License). Without
+  it there's no map.
+- **[Apple's iTunes Search API](https://developer.apple.com/library/archive/documentation/AudioVideo/Conceptual/iTuneSearchAPI/)**
+  — every 30-second preview and piece of artwork is served live by Apple,
+  not stored or proxied here.
+- **[Spotify Web Playback SDK](https://developer.spotify.com/documentation/web-playback-sdk)**
+  — powers the optional full-track tier for Premium listeners who connect
+  their account.
+- **[React](https://react.dev)**, **[D3](https://d3js.org)** (the canvas
+  layout, zoom, and force simulation), **[Vite](https://vitejs.dev)**, and
+  **[vite-plugin-pwa](https://vite-pwa-org.netlify.app)** — the app itself is
+  built on these.
+- **[Jost](https://github.com/indestructible-type/Jost)** — the wordmark's
+  typeface, [SIL Open Font License](https://github.com/indestructible-type/Jost/blob/master/OFL.txt),
+  self-hosted rather than loaded from a CDN.
+- **[Umami](https://umami.is)** — the optional, self-hosted, cookie-free
+  analytics some deployments use; off unless a maintainer configures it (see
+  [docs/DEVELOPMENT.md](docs/DEVELOPMENT.md)).
+
+The full, versioned list of every package this project depends on is
+`package.json` / `package-lock.json` — nothing here is hidden or vendored in
+without attribution. If you notice a credit that's missing or wrong,
+[open an issue](https://github.com/tmeuze/anjunatree/issues/new).
 
 ## Contributing
 

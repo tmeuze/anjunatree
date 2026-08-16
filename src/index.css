@@ -73,8 +73,8 @@ body {
 .header {
   display: flex;
   align-items: center;
-  gap: 10px;
-  padding: 8px 14px;
+  gap: 8px;
+  padding: 8px 12px;
   border-bottom: 1px solid var(--hairline);
   flex-wrap: nowrap;
   min-height: 52px;
@@ -319,6 +319,29 @@ body {
   color: var(--ink-muted);
   font-style: italic;
   pointer-events: none;
+}
+
+.empty-note {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  text-align: center;
+  pointer-events: none;
+}
+
+.empty-note p {
+  color: var(--ink-secondary);
+  font-size: calc(13.5px * var(--font-scale));
+  margin: 0;
+}
+
+.empty-note .set-button {
+  pointer-events: auto;
 }
 
 .loading {
@@ -1671,11 +1694,16 @@ body {
   }
 }
 
-@media (max-width: 1300px) {
-  /* Icons carry the buttons from here down — the header grew a Theme
-     trigger and a wider, always-visible search field, so this step now
-     kicks in noticeably earlier than 900px to keep the row from
-     overflowing at ordinary desktop widths. */
+@media (max-width: 1380px) {
+  /* Icons carry the buttons from here down. The header has eight controls
+     plus an always-visible search field and the tagline, which together
+     measure ~1365px for full text labels — this is that width plus a
+     small buffer, trimmed as tight as spacing allows. It still means a
+     very ordinary 1280px laptop screen gets icon-only buttons; tooltips
+     carry the meaning there. Shrinking further would mean cutting a
+     control (merge Filters+Theme, or drop the tagline) rather than
+     trimming padding — a call worth making deliberately, not as a side
+     effect of a CSS tweak. */
   .menu-label {
     display: none;
   }
@@ -1702,7 +1730,7 @@ body {
 .nav-section {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 6px;
   flex-shrink: 0;
 }
 
@@ -1732,7 +1760,7 @@ body {
 }
 
 .search-box .search {
-  width: 150px;
+  width: 128px;
   min-width: 0;
   background: var(--panel);
   border: 1px solid var(--hairline);
@@ -1746,7 +1774,7 @@ body {
 }
 
 .search-box .search:focus {
-  width: 200px;
+  width: 190px;
   border-color: color-mix(in srgb, var(--label-anjunabeats) 65%, transparent);
 }
 
@@ -1768,12 +1796,12 @@ body {
 }
 
 .nav-actions {
-  padding-left: 10px;
+  padding-left: 8px;
   border-left: 1px solid var(--hairline);
 }
 
 .nav-filters {
-  padding-left: 10px;
+  padding-left: 8px;
   border-left: 1px solid var(--hairline);
 }
 
@@ -1830,21 +1858,26 @@ body {
   }
 
   .header {
-    gap: 6px;
+    gap: 5px;
+    padding: 8px 10px;
   }
 
   .search-box .search {
-    width: 72px;
+    width: 88px;
   }
 
   .search-box .search:focus {
-    width: 140px;
+    width: 150px;
   }
 
   .nav-filters,
   .nav-actions {
-    padding-left: 6px;
+    padding-left: 4px;
     border-left: none;
+  }
+
+  .menu-trigger {
+    padding: 6px 8px;
   }
 }
 

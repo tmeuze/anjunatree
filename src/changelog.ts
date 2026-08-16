@@ -8,7 +8,7 @@
 // Bump it alongside adding an entry here; see useUpdateFlow.ts for how it's
 // used to decide whether to show the changelog automatically.
 
-export const APP_VERSION = '2026.08.11'
+export const APP_VERSION = '2026.08.16'
 
 export interface ChangelogEntry {
   version: string
@@ -18,6 +18,19 @@ export interface ChangelogEntry {
 }
 
 export const CHANGELOG: ChangelogEntry[] = [
+  {
+    version: '2026.08.16',
+    date: '16 August 2026',
+    title: 'Sharper edges',
+    items: [
+      'Fixed the logo’s trunk and timeline rendering invisible in every theme',
+      '“Radio” is now “Surprise Me”',
+      'Header controls stay right-aligned and stop overlapping at every screen size, with a new one-tap Theme menu',
+      'Search is visible by default instead of hiding behind an icon',
+      'Searching for something with no matches now says so, instead of going quiet',
+      'A social preview card now shows up when a link to AnjunaTree is shared elsewhere',
+    ],
+  },
   {
     version: '2026.08.11',
     date: '11 August 2026',

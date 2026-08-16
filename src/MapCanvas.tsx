@@ -218,11 +218,46 @@ export default function MapCanvas({
       for (const key of LABEL_KEYS) {
         const meta = LABEL_META[key]
         const y = Math.max(28, Math.min(h - 40, t.applyY(meta.laneY)))
+        const text = meta.name.toUpperCase()
+        // The earliest releases sit right where this label draws, at the
+        // canvas's fixed left edge — a scrim behind the text keeps it legible
+        // over whatever dots happen to be underneath, in every theme.
+        labelScrim(ctx, text, 14, y, colors.surface, 0.72 * alpha)
         ctx.globalAlpha = 0.9 * alpha
         ctx.fillStyle = colors[key]
-        ctx.fillText(meta.name.toUpperCase(), 14, y)
+        ctx.fillText(text, 14, y)
       }
       ctx.globalAlpha = 1
+    }
+
+    /** A soft rounded-rect behind left-aligned label text, so it stays
+     * readable over map data instead of just alpha-blending with it. */
+    function labelScrim(
+      ctx: CanvasRenderingContext2D,
+      text: string,
+      x: number,
+      y: number,
+      fill: string,
+      alpha: number,
+    ) {
+      const metrics = ctx.measureText(text)
+      const textH =
+        (metrics.actualBoundingBoxAscent ?? 8) + (metrics.actualBoundingBoxDescent ?? 3)
+      const padX = 5
+      const padY = 3
+      const rx = x - padX
+      const ry = y - textH / 2 - padY
+      const rw = metrics.width + padX * 2
+      const rh = textH + padY * 2
+      ctx.globalAlpha = alpha
+      ctx.fillStyle = fill
+      if (ctx.roundRect) {
+        ctx.beginPath()
+        ctx.roundRect(rx, ry, rw, rh, 4)
+        ctx.fill()
+      } else {
+        ctx.fillRect(rx, ry, rw, rh)
+      }
     }
 
     function drawSpectrumScale(ctx: CanvasRenderingContext2D, t: ZoomTransform, alpha: number) {
@@ -255,6 +290,7 @@ export default function MapCanvas({
         ctx.lineTo(w - 10, y)
         ctx.stroke()
         ctx.setLineDash([])
+        labelScrim(ctx, band.label, 18, y, colors.surface, 0.72 * alpha)
         ctx.globalAlpha = 0.85 * alpha
         ctx.fillStyle = colors.inkSecondary
         ctx.fillText(band.label, 18, y)

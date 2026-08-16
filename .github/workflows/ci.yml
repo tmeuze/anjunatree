@@ -1,0 +1,35 @@
+name: CI
+
+# Runs on every pull request and push to main: type-checks, builds, and
+# audits dependencies for known vulnerabilities. This is separate from
+# deploy.yml (which publishes) so a broken PR never gets a chance to reach
+# production, and separate from dependabot.yml (which proposes dependency
+# updates) — this is what verifies them.
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+
+      - name: Type-check and build
+        run: npm run build
+
+      - name: Audit dependencies
+        # Fails only on high/critical advisories so a moderate-severity report
+        # in a transitive dev dependency doesn't block every PR — but nothing
+        # in that range ships to production silently. See the "Dependencies"
+        # section of docs/DEVELOPMENT.md for what to do when this fails.
+        run: npm audit --audit-level=high

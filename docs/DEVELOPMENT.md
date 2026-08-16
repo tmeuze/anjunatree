@@ -210,6 +210,29 @@ environment* with required reviewers, or keep them out of GitHub entirely by
 letting your host (Cloudflare/Netlify) build from the repo with credentials
 stored in its own dashboard.
 
+## Dependencies
+
+Deliberately few — see the README's [Credits](../README.md#credits) section
+for what they are and why. Keeping them current and checked is automated
+rather than manual:
+
+- **`.github/workflows/ci.yml`** runs on every pull request and push to
+  `main`: type-checks, builds, and runs `npm audit --audit-level=high`.
+  A high/critical advisory fails the build; nothing merges past it silently.
+- **`.github/dependabot.yml`** opens a weekly PR bumping npm dependencies
+  (grouped into one PR, not one per package) and another for the GitHub
+  Actions themselves. CI has to pass before either can merge.
+
+If `npm audit` fails a build:
+
+1. Run `npm audit` locally to see which package and advisory.
+2. `npm audit fix` handles most transitive-dependency cases automatically.
+3. If the flagged package is a direct dependency with no fix yet, check
+   whether the advisory actually applies to how this app uses it (browser
+   bundle, no server, no user-supplied input to most of it) before treating
+   it as urgent — but don't just raise `--audit-level` to make the failure
+   go away. Open an issue if it needs a real decision.
+
 ## Roadmap
 
 - [x] Full-track playback via the Spotify Web Playback SDK for Premium
