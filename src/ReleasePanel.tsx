@@ -59,6 +59,11 @@ export default function ReleasePanel({
   const [match, setMatch] = useState<MatchState>({ status: 'loading' })
   const [tracks, setTracks] = useState<AlbumTrack[] | null>(null)
   const [exporting, setExporting] = useState(false)
+  // Bumped by the "Try again" button to force the lookup effect below to
+  // re-run without waiting for `rel` itself to change — iTunes' occasional
+  // dropped connection (see itunes.ts) already gets four attempts on its
+  // own, but a listener shouldn't be stuck if all four land badly.
+  const [retryToken, setRetryToken] = useState(0)
   const autoplayedFor = useRef<string | null>(null)
   const { rel } = node
 
@@ -148,7 +153,7 @@ export default function ReleasePanel({
     return () => {
       alive = false
     }
-  }, [rel])
+  }, [rel, retryToken])
 
   // Selecting a release is intent to listen: hand its queue to the player
   // once, starting on the matched track when the fallback search found one.
@@ -291,7 +296,14 @@ export default function ReleasePanel({
         {match.status === 'missing' && (
           <div className="panel-note">No confident match on iTunes for this release.</div>
         )}
-        {match.status === 'error' && <div className="panel-note">Lookup failed.</div>}
+        {match.status === 'error' && (
+          <div className="panel-note panel-note-retry">
+            <span>Lookup failed — iTunes might just be having a moment.</span>
+            <button className="set-button" onClick={() => setRetryToken((n) => n + 1)}>
+              Try again
+            </button>
+          </div>
+        )}
         {match.status === 'ready' && !tracks && <div className="panel-note">Loading tracks…</div>}
         {match.status === 'ready' && tracks?.length === 0 && (
           <div className="panel-note">Matched, but iTunes lists no playable tracks.</div>

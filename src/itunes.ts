@@ -84,13 +84,18 @@ const ITUNES_FETCH: RequestInit = { cache: 'no-store', credentials: 'omit' }
 
 /**
  * Apple also drops the occasional connection outright under repeated requests
- * — roughly one in twenty when measured back to back. In the browser that
- * surfaces as a rejected fetch ("Load failed" in Safari), which is what the
- * intermittent "Lookup failed" was: browsing the map fires several requests
- * per release, so the odds of hitting one climb quickly, while a single
- * deep-link usually gets through. Retrying briefly absorbs it.
+ * — roughly one in twenty when measured back to back on a good connection,
+ * and worse on cellular/iOS in the wild, per continuing reports of "Lookup
+ * failed" even with the two-retry version of this. In the browser that
+ * surfaces as a rejected fetch ("Load failed" in Safari): browsing the map
+ * fires several requests per release, so the odds of hitting one climb
+ * quickly, while a single deep-link usually gets through. Three retries
+ * (four attempts total) costs at most ~3.2s of extra wait in the worst case
+ * a real connection is unlikely to hit twice — better than the dead end of
+ * giving up after two. See also ReleasePanel.tsx's "Try again" button for
+ * when even that isn't enough.
  */
-const RETRY_DELAYS_MS = [250, 900]
+const RETRY_DELAYS_MS = [300, 900, 2000]
 
 /**
  * Responses are immutable for our purposes, and bypassing the HTTP cache would

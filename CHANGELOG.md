@@ -5,6 +5,29 @@ this list — what someone would actually notice, not every commit. This file
 is the fuller, developer-facing version; see `git log` for the complete
 history.
 
+## 2026-08-16 — Small fixes
+
+- **`.update-cta` (the "new version ready" banner) had no CSS rules at
+  all** — it rendered with zero styling, uncoordinated with anything else
+  on screen. Gave it a real design: a centered, stylized card fixed to the
+  top of the viewport, deliberately not sharing the bottom-left corner
+  that `.status-stack` (toasts) and `.install-cta` (the install banner)
+  already both anchor to.
+- **`.status-stack` and `.install-cta` both anchor to the same fixed
+  bottom-left corner**, so a status toast and the install banner could
+  render on top of each other. Added `.app:has(.install-cta) .status-stack`
+  (and a combined rule for when the player bar is *also* present) to lift
+  the toasts clear, extending the same `:has()` pattern already used for
+  the player-bar case.
+- **iTunes lookup failures got a dead end, not a recovery path.** A failed
+  `findRelease`/`lookupTracks` call left "Lookup failed." with no way to
+  retry short of closing and reopening the panel. Added a "Try again"
+  button (bumps a `retryToken` dependency to re-run the lookup effect
+  without needing `rel` itself to change) and extended `itunes.ts`'s retry
+  backoff from 2 retries to 3 (`[300, 900, 2000]`ms — 4 attempts total,
+  ~3.2s worst case) after continued reports of "Lookup failed" on iOS even
+  with the original two-retry version from 2026-08-11.
+
 ## 2026-08-16 — Make it yours
 
 - **Personalised map.** Two new Spotify scopes (`user-library-read`,

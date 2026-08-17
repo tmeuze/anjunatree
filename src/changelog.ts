@@ -8,7 +8,7 @@
 // Bump it alongside adding an entry here; see useUpdateFlow.ts for how it's
 // used to decide whether to show the changelog automatically.
 
-export const APP_VERSION = '2026.08.16b'
+export const APP_VERSION = '2026.08.16c'
 
 export interface ChangelogEntry {
   version: string
@@ -18,6 +18,15 @@ export interface ChangelogEntry {
 }
 
 export const CHANGELOG: ChangelogEntry[] = [
+  {
+    version: '2026.08.16c',
+    date: '16 August 2026',
+    title: 'Small fixes',
+    items: [
+      'The "update ready" banner is now its own clear notice at the top of the screen, instead of unstyled text that could land on top of other messages',
+      'A release lookup that fails now offers a Try again button instead of a dead end, and retries harder on its own first',
+    ],
+  },
   {
     version: '2026.08.16b',
     date: '16 August 2026',
