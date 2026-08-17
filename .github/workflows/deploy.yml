@@ -37,7 +37,7 @@ jobs:
           # every visitor once deployed. The .p8 it derives from never leaves
           # your machine and must never be added here.
           VITE_APPLE_DEV_TOKEN: ${{ secrets.VITE_APPLE_DEV_TOKEN }}
-      - uses: actions/upload-pages-artifact@v3
+      - uses: actions/upload-pages-artifact@v5
         with:
           path: dist
 
