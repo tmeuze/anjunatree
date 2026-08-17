@@ -328,29 +328,61 @@ interface SpotifyAlbumRef {
 }
 
 const PAGE_SIZE = 50
-// A hard stop, not a realistic ceiling: 6,000 saved items is generous for
+// A hard stop, not a realistic ceiling: 10,000 saved items is generous for
 // matching against a ~3,000-release catalogue, and it bounds how many
 // requests one library sync can ever make.
-const MAX_PAGES = 120
+const MAX_ITEMS = 10_000
+const CONCURRENCY = 6
+const REQUEST_TIMEOUT_MS = 15_000
 
+async function fetchPage(
+  session: Session,
+  path: string,
+  offset: number,
+): Promise<{ items: SpotifyAlbumRef[]; total: number }> {
+  const url = `${API}${path}?limit=${PAGE_SIZE}&offset=${offset}`
+  const res = await fetch(url, {
+    headers: { Authorization: `Bearer ${session.accessToken}` },
+    signal: AbortSignal.timeout(REQUEST_TIMEOUT_MS),
+  })
+  if (!res.ok) return { items: [], total: 0 }
+  const json = (await res.json()) as {
+    items: { album?: SpotifyAlbumRef; track?: { album: SpotifyAlbumRef } }[]
+    total: number
+  }
+  const items = json.items.map((item) => item.album ?? item.track?.album).filter((a) => !!a)
+  return { items, total: json.total }
+}
+
+/**
+ * All pages of a saved-items endpoint, fetched with bounded concurrency
+ * rather than one request at a time. The first page's `total` tells us every
+ * remaining offset up front, so the rest can go out in parallel batches
+ * instead of waiting on each page before requesting the next — a library of
+ * a few thousand saved tracks was otherwise taking long enough, one request
+ * at a time, to look hung rather than just slow. `onProgress` reports items
+ * fetched so far, so the UI can say something better than "please wait".
+ */
 async function fetchAllPages(
   session: Session,
   path: string,
+  onProgress: (count: number) => void,
 ): Promise<SpotifyAlbumRef[]> {
-  const out: SpotifyAlbumRef[] = []
-  let url = `${API}${path}?limit=${PAGE_SIZE}`
-  for (let page = 0; url && page < MAX_PAGES; page++) {
-    const res = await fetch(url, { headers: { Authorization: `Bearer ${session.accessToken}` } })
-    if (!res.ok) break
-    const json = (await res.json()) as {
-      items: { album?: SpotifyAlbumRef; track?: { album: SpotifyAlbumRef } }[]
-      next: string | null
-    }
-    for (const item of json.items) {
-      const album = item.album ?? item.track?.album
-      if (album) out.push(album)
-    }
-    url = json.next ?? ''
+  const first = await fetchPage(session, path, 0)
+  const out = [...first.items]
+  onProgress(out.length)
+  const total = Math.min(first.total, MAX_ITEMS)
+
+  const offsets: number[] = []
+  for (let offset = PAGE_SIZE; offset < total; offset += PAGE_SIZE) offsets.push(offset)
+
+  for (let i = 0; i < offsets.length; i += CONCURRENCY) {
+    const batch = offsets.slice(i, i + CONCURRENCY)
+    const pages = await Promise.all(
+      batch.map((offset) => fetchPage(session, path, offset).catch(() => ({ items: [], total: 0 }))),
+    )
+    for (const page of pages) out.push(...page.items)
+    onProgress(out.length)
   }
   return out
 }
@@ -359,13 +391,24 @@ async function fetchAllPages(
  * Every saved album, plus the parent album of every saved track, as match
  * keys — this is release-level (matching AnjunaTree's own granularity), not
  * track-level, so a single saved track lights up its whole release on the
- * map. Two requests' worth of pages in parallel; Spotify's rate limit is
- * generous enough that a library sync this size is a non-event.
+ * map.
  */
-export async function fetchSavedReleaseKeys(session: Session): Promise<Set<string>> {
+export async function fetchSavedReleaseKeys(
+  session: Session,
+  onProgress?: (count: number) => void,
+): Promise<Set<string>> {
+  let albumsCount = 0
+  let tracksCount = 0
+  const report = () => onProgress?.(albumsCount + tracksCount)
   const [albums, trackAlbums] = await Promise.all([
-    fetchAllPages(session, '/me/albums'),
-    fetchAllPages(session, '/me/tracks'),
+    fetchAllPages(session, '/me/albums', (n) => {
+      albumsCount = n
+      report()
+    }),
+    fetchAllPages(session, '/me/tracks', (n) => {
+      tracksCount = n
+      report()
+    }),
   ])
   const keys = new Set<string>()
   for (const album of [...albums, ...trackAlbums]) {

@@ -35,6 +35,18 @@ history.
   pattern and, on inspection, the exact same latent bug; fixed both by
   resetting the guard ref in the effect's cleanup rather than only on
   success/failure.
+- **Fixed real-account library syncs taking long enough to look hung.**
+  `fetchAllPages` fetched saved albums/tracks one page (50 items) at a
+  time, sequentially — fine against the handful of items used to test it,
+  but a real library of a few thousand saved tracks meant hundreds of
+  sequential round trips. Reworked to fetch the first page, read Spotify's
+  `total` from it, then fetch every remaining offset in parallel batches
+  of 6 (`fetchPage` + a batched loop in `fetchAllPages`), added a 15s
+  per-request timeout (`AbortSignal.timeout`) so one stuck request can't
+  stall the whole sync, and surfaced running progress
+  (`Checking your saved releases… (N so far)`) once there's a real number
+  worth showing, so a library that *does* take several seconds no longer
+  reads as frozen.
 
 ## 2026-08-16 — Sharper edges
 

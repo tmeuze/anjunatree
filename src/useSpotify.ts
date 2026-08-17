@@ -89,7 +89,14 @@ export function useSpotify(): SpotifyState {
     setLoadingLibrary(true)
     setStatus('spotify-library', 'progress', 'Checking your saved releases…')
     spotify
-      .fetchSavedReleaseKeys(session)
+      .fetchSavedReleaseKeys(session, (count) => {
+        if (!alive || count < 50) return
+        // Only worth showing once there's a real number to report — a big
+        // library takes a real, visible number of seconds even fetched in
+        // parallel, and "0 so far" for the first instant reads as no better
+        // than the plain "Checking…" text.
+        setStatus('spotify-library', 'progress', `Checking your saved releases… (${count} so far)`)
+      })
       .then((keys) => {
         if (!alive) return
         setSavedKeys(keys)

@@ -23,7 +23,7 @@ export const CHANGELOG: ChangelogEntry[] = [
     date: '16 August 2026',
     title: 'Make it yours',
     items: [
-      'Connect Spotify and turn on “Light up my saved releases” in Settings to ring your saved albums and tracks on the map',
+      'Connect Spotify and turn on “Light up my saved releases” in Settings to ring your saved albums and tracks on the map — checks a large library in parallel instead of one item at a time, so it doesn’t sit and think for ages',
       'Export any artist’s constellation as a private Spotify playlist, right from the release panel',
     ],
   },
