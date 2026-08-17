@@ -1,5 +1,5 @@
 {
- "generatedAt": "2026-08-10T05:10:52.925Z",
+ "generatedAt": "2026-08-17T07:18:40.288Z",
  "releases": [
   {
    "id": "d3ee25a5-6d84-38dc-bc77-fc387f558f39",
@@ -32751,7 +32751,7 @@
    ]
   },
   {
-   "id": "2544c29b-14e2-4477-af13-b413fbd88327",
+   "id": "ee23a5fa-d895-41f0-8c28-9c21f2f59246",
    "title": "The Anjunadeep Edition 345",
    "artist": "James Grant",
    "artistIds": [
@@ -32770,7 +32770,7 @@
    ]
   },
   {
-   "id": "ee23a5fa-d895-41f0-8c28-9c21f2f59246",
+   "id": "2544c29b-14e2-4477-af13-b413fbd88327",
    "title": "The Anjunadeep Edition 345",
    "artist": "James Grant",
    "artistIds": [
@@ -54692,6 +54692,81 @@
    "catno": "ANJDEE1012D",
    "type": "Single",
    "secondaryTypes": []
+  },
+  {
+   "id": "56bb907d-a696-4b43-87f4-ab8c998980e2",
+   "title": "Stay",
+   "artist": "Noé Solange",
+   "artistIds": [
+    "1d6ce654-37c2-43c5-bc84-7fde67efb63e"
+   ],
+   "artists": [
+    "Noé Solange"
+   ],
+   "label": "reflections",
+   "date": "2026-08-10",
+   "year": 2026,
+   "catno": "ANJCH073D",
+   "type": "Single",
+   "secondaryTypes": []
+  },
+  {
+   "id": "f27a55bc-23e4-4c27-918c-c4e2a557314b",
+   "title": "lightning",
+   "artist": "Cephas Azariah & Kidnap",
+   "artistIds": [
+    "be916df2-512e-4082-9bfc-a60f6bd2c92b",
+    "eac18b2a-2ce8-4598-9bd4-0d1cf0a8e214"
+   ],
+   "artists": [
+    "Cephas Azariah",
+    "Kidnap"
+   ],
+   "label": "reflections",
+   "date": "2026-08-13",
+   "year": 2026,
+   "catno": "ANJCH074D",
+   "type": "Single",
+   "secondaryTypes": []
+  },
+  {
+   "id": "9da9a7e0-16db-439f-b183-b0319609e6f7",
+   "title": "When You Believe (Above & Beyond club mix)",
+   "artist": "Above & Beyond with Victoria Horn",
+   "artistIds": [
+    "370bd5a3-4abf-4356-8576-3a8fc0c11d65",
+    "cc373fc7-6edb-40c4-9a7c-1e082a21b9e0"
+   ],
+   "artists": [
+    "Above & Beyond",
+    "Victoria Horn"
+   ],
+   "label": "anjunabeats",
+   "date": "2026-08-14",
+   "year": 2026,
+   "catno": "ANJ1092BD",
+   "type": "Single",
+   "secondaryTypes": []
+  },
+  {
+   "id": "48f163b2-3261-4ed3-8252-525b9ec24f58",
+   "title": "Movement, Vol. 7 (live from Medulin, Croatia)",
+   "artist": "James Grant",
+   "artistIds": [
+    "7a837972-4fee-4e33-adec-1dc17c4b2c5a"
+   ],
+   "artists": [
+    "James Grant"
+   ],
+   "label": "anjunadeep",
+   "date": "2026-08-14",
+   "year": 2026,
+   "catno": "ANJCDCO349D",
+   "type": "Album",
+   "secondaryTypes": [
+    "Live",
+    "DJ-mix"
+   ]
   },
   {
    "id": "8e1ca840-62da-46c4-a4a7-0cf31a0da791",
