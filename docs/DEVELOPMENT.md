@@ -223,6 +223,42 @@ rather than manual:
   (grouped into one PR, not one per package) and another for the GitHub
   Actions themselves. CI has to pass before either can merge.
 
+### Handling the weekly Dependabot PRs
+
+Two PRs show up most Mondays: one grouping npm dependency bumps, one
+grouping GitHub Actions version bumps. Neither auto-merges — that's
+deliberate, not a missing feature; see below.
+
+1. **Check CI is green** on the PR (the `CI` check, from `ci.yml`). If it's
+   red, don't merge — read the failure first.
+2. **Look at what's actually in it.** Dependabot's PR description lists
+   every package and its old → new version. A patch or minor bump
+   (`7.3.6 → 7.3.9`) is routine; a **major** bump (`7.3.6 → 8.0.0`) can
+   change behavior CI's type-check-and-build alone won't catch — Vite and
+   TypeScript major versions especially.
+3. **For a major bump**, don't just trust a green CI check. Pull the
+   branch and actually run the app:
+   ```bash
+   git fetch GitHub
+   git worktree add /tmp/dep-test GitHub/<dependabot-branch-name>
+   cd /tmp/dep-test && npm ci && npm run dev
+   ```
+   Click around — search, select a release, switch views, check the
+   console for new warnings — then `git worktree remove /tmp/dep-test`
+   when done.
+4. **Merge via GitHub's UI** (or `git merge --no-ff` locally, which is what
+   was used to clear the first batch of these — see commit history around
+   2026-08-16 for the pattern, including how to resolve the trivial
+   conflicts that come from merging two same-week Actions-bump PRs back to
+   back).
+
+There's no auto-merge workflow here on purpose — every PR still gets a
+human look, major bump or not. If that's ever worth automating, the
+`groups` block in `dependabot.yml` can be split so minor/patch updates
+land in one auto-mergeable group and majors always get their own PR
+(`groups.<name>.update-types`) — a config change plus a small
+`workflow_run`-triggered merge workflow, not a redesign.
+
 If `npm audit` fails a build:
 
 1. Run `npm audit` locally to see which package and advisory.

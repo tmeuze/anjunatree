@@ -15,10 +15,17 @@ updates:
       prefix: chore-bump
 
   # Keeps the GitHub Actions themselves (actions/checkout, actions/setup-node,
-  # etc.) current — those are dependencies too, just not npm ones.
+  # etc.) current — those are dependencies too, just not npm ones. Grouped
+  # for the same reason as npm-dependencies above: the first run of this
+  # config opened four separate PRs (one per action) for what was, in
+  # practice, one Tuesday's worth of review.
   - package-ecosystem: github-actions
     directory: /
     schedule:
       interval: weekly
+    groups:
+      github-actions:
+        patterns:
+          - '*'
     commit-message:
       prefix: chore-bump
