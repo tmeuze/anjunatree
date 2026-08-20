@@ -20,6 +20,12 @@ export interface SpotifyState {
    * from "haven't checked". */
   savedKeys: Set<string> | null
   loadingLibrary: boolean
+  /** When savedKeys last came from Spotify — from cache if that's all
+   * there's been time for, freshly fetched otherwise. Null until the first
+   * successful sync ever completes. */
+  savedKeysSyncedAt: number | null
+  /** Force a fresh sync, bypassing the cached copy. */
+  refreshSavedKeys: () => void
   /** Resolve and play a full track. False means "couldn't — use the preview". */
   playFull: (artist: string, title: string) => Promise<boolean>
   pause: () => void
@@ -41,7 +47,12 @@ export function useSpotify(): SpotifyState {
   const [connecting, setConnecting] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [savedKeys, setSavedKeys] = useState<Set<string> | null>(null)
+  const [savedKeysSyncedAt, setSavedKeysSyncedAt] = useState<number | null>(null)
   const [loadingLibrary, setLoadingLibrary] = useState(false)
+  // Bumped by refreshSavedKeys() to force the sync effect below to skip the
+  // cache and hit the network, without needing session/needsReconnect to
+  // actually change.
+  const [librarySyncNonce, setLibrarySyncNonce] = useState(0)
   const playerRef = useRef<ConnectedPlayer | null>(null)
   // Mirrors playerRef as state: a ref alone would attach the player without
   // ever re-rendering, so canPlayFull would stay false and playback would
@@ -66,9 +77,14 @@ export function useSpotify(): SpotifyState {
     }
   }, [session])
 
-  // Sync saved releases once per connection, so the map can light them up.
-  // Skipped until reconnect grants the library scope; cleared on sign-out
-  // rather than left stale.
+  // Sync saved releases so the map can light them up — stale-while-
+  // revalidate against a localStorage cache (spotify.ts), not a fresh fetch
+  // on every load. A cold fetch is the single most expensive thing this app
+  // asks Spotify for (up to a couple hundred paginated requests for a real
+  // library), so a reload shouldn't pay for it again just to show the same
+  // answer as five minutes ago. Cached results show immediately; a
+  // background refresh only actually hits the network once the cache is
+  // more than a day old, or refreshSavedKeys() is called explicitly.
   //
   // No "already synced" ref guard here (unlike the player-attach effect
   // below) — deliberately: that pattern doesn't reset its guard on cleanup,
@@ -82,39 +98,66 @@ export function useSpotify(): SpotifyState {
   useEffect(() => {
     if (!session) {
       setSavedKeys(null)
+      setSavedKeysSyncedAt(null)
       return
     }
     if (needsReconnect) return
+
+    const forced = librarySyncNonce > 0
+    const cached = forced ? null : spotify.loadCachedSavedKeys()
+    if (cached) {
+      setSavedKeys(cached.keys)
+      setSavedKeysSyncedAt(cached.syncedAt)
+      if (!cached.stale) return // fresh enough — no network call at all
+    }
+    // Something was already on screen (from cache, or from an earlier sync
+    // this session) — this fetch is a quiet background refresh, not the
+    // first-ever wait, whether or not *this particular* fetch bypassed the
+    // cache read above to get here.
+    const hadData = Boolean(cached) || savedKeys !== null
+
     let alive = true
     setLoadingLibrary(true)
-    setStatus('spotify-library', 'progress', 'Checking your saved releases…')
+    setStatus(
+      'spotify-library',
+      'progress',
+      hadData ? 'Refreshing your saved releases…' : 'Checking your saved releases…',
+    )
     spotify
       .fetchSavedReleaseKeys(session, (count) => {
-        if (!alive || count < 50) return
+        if (!alive || hadData || count < 50) return
         // Only worth showing once there's a real number to report — a big
         // library takes a real, visible number of seconds even fetched in
         // parallel, and "0 so far" for the first instant reads as no better
-        // than the plain "Checking…" text.
+        // than the plain "Checking…" text. Skipped entirely when a cached
+        // result is already on screen — that toast is quieter on purpose.
         setStatus('spotify-library', 'progress', `Checking your saved releases… (${count} so far)`)
       })
       .then((keys) => {
         if (!alive) return
         setSavedKeys(keys)
+        const syncedAt = Date.now()
+        setSavedKeysSyncedAt(syncedAt)
+        spotify.saveCachedSavedKeys(keys)
         clearStatus('spotify-library')
       })
       .catch((e: unknown) => {
         if (!alive) return
+        // A stale cache beats no data at all — leave it showing and just
+        // report that the refresh itself didn't go through.
         setStatus(
           'spotify-library',
           'error',
-          e instanceof Error ? e.message : 'Could not read your saved releases.',
+          e instanceof Error ? e.message : 'Could not refresh your saved releases.',
         )
       })
       .finally(() => alive && setLoadingLibrary(false))
     return () => {
       alive = false
     }
-  }, [session, needsReconnect])
+  }, [session, needsReconnect, librarySyncNonce])
+
+  const refreshSavedKeys = useCallback(() => setLibrarySyncNonce((n) => n + 1), [])
 
   // Attach a player once — and only once — the account can actually use one.
   //
@@ -236,11 +279,12 @@ export function useSpotify(): SpotifyState {
     attemptedRef.current = false
     setPlayerReady(false)
     clearStatus('spotify-player')
-    spotify.logout()
+    spotify.logout() // also clears the cached saved-releases keys
     setSession(null)
     setProfile(null)
     setPlayback(null)
     setError(null)
+    setLibrarySyncNonce(0)
   }, [])
 
   const exportPlaylist = useCallback(
@@ -262,6 +306,8 @@ export function useSpotify(): SpotifyState {
     playback,
     savedKeys,
     loadingLibrary,
+    savedKeysSyncedAt,
+    refreshSavedKeys,
     playFull,
     pause,
     resume,

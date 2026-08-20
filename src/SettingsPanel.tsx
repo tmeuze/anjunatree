@@ -12,6 +12,18 @@ interface Props {
   onClose: () => void
 }
 
+/** "just now" / "12 min ago" / "3 hr ago" / "2 days ago" — coarse on purpose,
+ * this is only ever describing a cache that's at most a day or so old. */
+function timeAgo(ms: number): string {
+  const mins = Math.round((Date.now() - ms) / 60_000)
+  if (mins < 1) return 'just now'
+  if (mins < 60) return `${mins} min ago`
+  const hours = Math.round(mins / 60)
+  if (hours < 24) return `${hours} hr ago`
+  const days = Math.round(hours / 24)
+  return `${days} day${days === 1 ? '' : 's'} ago`
+}
+
 function Toggle({
   label,
   hint,
@@ -142,18 +154,32 @@ export default function SettingsPanel({
                 {sp.error && <p className="set-error">{sp.error}</p>}
 
                 {!sp.needsReconnect && (
-                  <Toggle
-                    label="Light up my saved releases"
-                    hint={
-                      sp.loadingLibrary
-                        ? 'Checking your saved albums and tracks…'
-                        : sp.savedKeys
-                          ? `Rings ${sp.savedKeys.size.toLocaleString()} saved release${sp.savedKeys.size === 1 ? '' : 's'} you have that are also on this map.`
-                          : 'Rings releases from your saved albums and tracks on the map.'
-                    }
-                    checked={settings.showSavedReleases}
-                    onChange={(v) => set('showSavedReleases', v)}
-                  />
+                  <>
+                    <Toggle
+                      label="Light up my saved releases"
+                      hint={
+                        sp.loadingLibrary && !sp.savedKeys
+                          ? 'Checking your saved albums and tracks…'
+                          : sp.savedKeys
+                            ? `Rings ${sp.savedKeys.size.toLocaleString()} saved release${sp.savedKeys.size === 1 ? '' : 's'} you have that are also on this map.`
+                            : 'Rings releases from your saved albums and tracks on the map.'
+                      }
+                      checked={settings.showSavedReleases}
+                      onChange={(v) => set('showSavedReleases', v)}
+                    />
+                    {sp.savedKeysSyncedAt && (
+                      <p className="set-hint set-sync-row">
+                        {sp.loadingLibrary
+                          ? 'Refreshing…'
+                          : `Synced ${timeAgo(sp.savedKeysSyncedAt)}`}
+                        {!sp.loadingLibrary && (
+                          <button className="set-link" onClick={sp.refreshSavedKeys}>
+                            Refresh now
+                          </button>
+                        )}
+                      </p>
+                    )}
+                  </>
                 )}
 
                 <div className="set-buttons">

@@ -1185,6 +1185,27 @@ body {
   margin-bottom: 8px;
 }
 
+.set-sync-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: -4px;
+}
+
+.set-link {
+  background: none;
+  border: none;
+  padding: 0;
+  color: var(--label-anjunadeep);
+  font-size: calc(11.5px * var(--font-scale));
+  cursor: pointer;
+  text-decoration: underline;
+}
+
+.set-link:hover {
+  color: var(--ink);
+}
+
 .set-list {
   margin: 0 0 12px 18px;
   font-size: calc(12px * var(--font-scale));

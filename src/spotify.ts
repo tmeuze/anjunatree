@@ -16,6 +16,7 @@ const API = 'https://api.spotify.com/v1'
 const STORE = 'anjunatree:spotify'
 const VERIFIER_KEY = 'anjunatree:spotify:verifier'
 const STATE_KEY = 'anjunatree:spotify:state'
+const SAVED_KEYS_STORE = 'anjunatree:spotify:saved-releases'
 
 // `streaming` is what the Web Playback SDK requires, and it is Premium-only —
 // Spotify will grant the scope to a free account but refuse to create a player
@@ -251,6 +252,55 @@ export async function getProfile(session: Session): Promise<Profile | null> {
 
 export function logout(): void {
   storeSession(null)
+  clearCachedSavedKeys()
+}
+
+// A saved library doesn't change minute to minute, and fetching it is the
+// most expensive thing this app asks Spotify for — up to a couple hundred
+// paginated requests for a real collection. Caching it in localStorage means
+// a page reload lights up the map instantly from what was there last time,
+// instead of the listener staring at "Checking your saved releases…" again
+// on every single visit. A day is long enough that the cache is usually
+// warm, short enough that a newly-saved album shows up the same day even
+// without an explicit refresh.
+const SAVED_KEYS_MAX_AGE_MS = 24 * 60 * 60 * 1000
+
+interface SavedKeysCache {
+  keys: string[]
+  syncedAt: number
+}
+
+export function loadCachedSavedKeys(): { keys: Set<string>; syncedAt: number; stale: boolean } | null {
+  try {
+    const raw = localStorage.getItem(SAVED_KEYS_STORE)
+    if (!raw) return null
+    const parsed = JSON.parse(raw) as SavedKeysCache
+    if (!Array.isArray(parsed.keys) || typeof parsed.syncedAt !== 'number') return null
+    return {
+      keys: new Set(parsed.keys),
+      syncedAt: parsed.syncedAt,
+      stale: Date.now() - parsed.syncedAt > SAVED_KEYS_MAX_AGE_MS,
+    }
+  } catch {
+    return null
+  }
+}
+
+export function saveCachedSavedKeys(keys: Set<string>): void {
+  try {
+    const payload: SavedKeysCache = { keys: [...keys], syncedAt: Date.now() }
+    localStorage.setItem(SAVED_KEYS_STORE, JSON.stringify(payload))
+  } catch {
+    /* storage unavailable — it just won't persist across reloads */
+  }
+}
+
+export function clearCachedSavedKeys(): void {
+  try {
+    localStorage.removeItem(SAVED_KEYS_STORE)
+  } catch {
+    /* nothing to clear if storage never worked */
+  }
 }
 
 

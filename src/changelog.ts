@@ -8,7 +8,7 @@
 // Bump it alongside adding an entry here; see useUpdateFlow.ts for how it's
 // used to decide whether to show the changelog automatically.
 
-export const APP_VERSION = '2026.08.16c'
+export const APP_VERSION = '2026.08.16d'
 
 export interface ChangelogEntry {
   version: string
@@ -18,6 +18,14 @@ export interface ChangelogEntry {
 }
 
 export const CHANGELOG: ChangelogEntry[] = [
+  {
+    version: '2026.08.16d',
+    date: '16 August 2026',
+    title: 'Remember me',
+    items: [
+      'Saved-releases matching no longer re-checks your whole Spotify library on every visit — it’s cached for a day, with a "Refresh now" in Settings if you want it sooner',
+    ],
+  },
   {
     version: '2026.08.16c',
     date: '16 August 2026',

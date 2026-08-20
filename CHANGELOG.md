@@ -5,6 +5,24 @@ this list — what someone would actually notice, not every commit. This file
 is the fuller, developer-facing version; see `git log` for the complete
 history.
 
+## 2026-08-16 — Remember me
+
+- **Saved-releases sync now caches to localStorage instead of re-fetching
+  the whole library on every page load.** `spotify.ts` gained
+  `loadCachedSavedKeys`/`saveCachedSavedKeys`/`clearCachedSavedKeys`
+  (`anjunatree:spotify:saved-releases`, a 24h max age); `useSpotify.ts`'s
+  sync effect is now stale-while-revalidate — a cached result (even a
+  stale one) sets `savedKeys` immediately with no loading state, and a
+  network fetch only actually happens when the cache is missing or older
+  than a day, or `refreshSavedKeys()` is called explicitly. `logout()`
+  clears the cache alongside the session.
+- Added `savedKeysSyncedAt` to `SpotifyState` and a "Synced N ago /
+  Refresh now" row under the Settings toggle, so the caching isn't
+  invisible — a listener can tell it's not just re-fetching quietly, and
+  can force a refresh right after saving something new.
+- Prompted by the user noticing the app refetched on every reload with no
+  visible reason not to cache it.
+
 ## 2026-08-16 — Small fixes
 
 - **`.update-cta` (the "new version ready" banner) had no CSS rules at
