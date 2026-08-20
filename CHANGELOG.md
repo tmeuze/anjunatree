@@ -5,6 +5,26 @@ this list — what someone would actually notice, not every commit. This file
 is the fuller, developer-facing version; see `git log` for the complete
 history.
 
+## 2026-08-20 — Spotify Extended Quota is a dead end
+
+- Corrected course after checking Spotify's current policy directly
+  (docs and a developer writeup on the May 2025 change) rather than
+  going ahead with the Extended Quota request as planned: as of May
+  2025, Spotify's only public-access tier requires being a legally
+  registered business already operating at 250k+ monthly active users,
+  with individuals excluded from applying entirely — not reachable for
+  a non-commercial fan project, no matter how the application is
+  written. Also corrected a stale fact along the way: Development
+  Mode's tester cap is 5, not the 25 previously documented here.
+- Rewrote the Settings note under "Connect Spotify"
+  (`SettingsPanel.tsx`) and `docs/DEVELOPMENT.md`'s Spotify section to
+  say this plainly instead of framing it as "pending review" — it
+  isn't pending, it's structurally closed.
+- Re-prioritized `docs/DEVELOPMENT.md`'s roadmap: Apple MusicKit JS is
+  now the real path to full-track playback for listeners generally
+  (no equivalent MAU/business-entity wall), not just a nice-to-have
+  second provider.
+
 ## 2026-08-20 — Privacy Policy and Terms of Use
 
 - Added `public/privacy.html` and `public/terms.html` — standalone static

@@ -255,10 +255,11 @@ export default function SettingsPanel({
                 )}
                 {configured && (
                   <p className="set-hint">
-                    Spotify caps this to approved accounts while it reviews AnjunaTree
-                    for public access — if Connect doesn&apos;t work for you yet, that&apos;s
-                    why, not a bug. Every release still plays a 30-second preview either
-                    way.
+                    Spotify caps apps like this one to a small number of approved accounts
+                    — its public-access tier now requires being a registered business with
+                    250k+ monthly users, which a non-commercial fan project can&apos;t
+                    reach. If Connect doesn&apos;t work for you, that&apos;s why, not a
+                    bug. Every release still plays a 30-second preview either way.
                   </p>
                 )}
               </>

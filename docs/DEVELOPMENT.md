@@ -128,8 +128,16 @@ subscribers needs credentials only you can create:
    `.env.local` as `VITE_SPOTIFY_CLIENT_ID=…` (PKCE flow — no client secret
    anywhere in the app).
 4. While the app is in Development Mode, add your own Spotify account under
-   *User Management* (up to 25 testers; public login requires requesting
-   Extended Quota Mode later).
+   *User Management* — capped at **5 authenticated users**, all manually
+   allowlisted. This is effectively permanent for a project like this one:
+   as of May 2025, Extended Quota Mode (Spotify's public-access tier)
+   requires being a legally registered business, already operating at
+   250k+ monthly active users, and applying via a company email —
+   individuals can no longer apply at all. See the
+   [quota modes docs](https://developer.spotify.com/documentation/web-api/concepts/quota-modes)
+   and [this writeup](https://spotify.leemartin.com/) of the change. Don't
+   plan around Spotify ever being AnjunaTree's public full-track path;
+   Apple Music (below) doesn't have an equivalent wall.
 
 **Apple Music** (subscribers, MusicKit JS)
 1. Developer account → *Certificates, Identifiers & Profiles* →
@@ -318,7 +326,14 @@ showing up on the board.
 - [x] Full-track playback via the Spotify Web Playback SDK for Premium
       listeners (`src/spotifyPlayer.ts`, `src/useSpotify.ts`). Falls back to
       previews for free accounts and for anything Spotify doesn't carry.
-- [ ] Apple MusicKit JS as a second full-playback provider.
+- [ ] Apple MusicKit JS as a second full-playback provider — now the more
+      important of the two, not just an alternative: Spotify's Extended
+      Quota Mode (its only public-access tier) has been effectively closed
+      to non-commercial projects since May 2025 (see "Connecting music
+      services" above), so Spotify full-track playback stays capped at 5
+      testers indefinitely. Apple has no equivalent MAU/business-entity
+      wall on MusicKit JS, making it the realistic path to full-track
+      playback for listeners generally, not just a handful of accounts.
 - [x] Personalised map: an opt-in Settings toggle rings releases matching the
       listener's saved Spotify albums/tracks (`spotify.fetchSavedReleaseKeys`,
       matched release-level in `App.tsx`'s `savedNodeIds`), and any traced
