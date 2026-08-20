@@ -707,6 +707,8 @@ export default function App() {
           <button className="footer-link-button" onClick={() => setInfoTab('about')}>
             About
           </button>
+          <a href="privacy.html">Privacy</a>
+          <a href="terms.html">Terms</a>
         </span>
       </footer>
 

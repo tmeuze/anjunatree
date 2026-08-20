@@ -5,6 +5,22 @@ this list — what someone would actually notice, not every commit. This file
 is the fuller, developer-facing version; see `git log` for the complete
 history.
 
+## 2026-08-20 — Privacy Policy and Terms of Use
+
+- Added `public/privacy.html` and `public/terms.html` — standalone static
+  pages (no JS bundle, no dependency on the app shell) linked from the
+  footer. Written to be accurate to what the app actually does, not
+  boilerplate: covers exactly what's stored in `localStorage`/
+  `sessionStorage` (preferences, last-seen version, Spotify session,
+  saved-releases cache), the three third-party services the browser
+  talks to directly (Apple's iTunes Search API, Spotify, GitHub Pages),
+  and the optional cookie-free Umami analytics some deployments may
+  enable. Prompted by preparing Spotify's Extended Quota Mode request,
+  which expects a privacy policy URL.
+- Not legal advice — a good-faith, plain-language pass appropriate for
+  a small non-commercial project with minimal data handling. Revisit
+  with real counsel if the project's scope or data handling changes.
+
 ## 2026-08-20 — Spotify quota note
 
 - Added a note under the "Connect Spotify" button (`SettingsPanel.tsx`)

@@ -1,0 +1,149 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Privacy Policy — AnjunaTree</title>
+<meta name="description" content="What AnjunaTree stores, what it doesn't, and which third-party services it talks to.">
+<style>
+  :root {
+    color-scheme: dark;
+    --surface: #0b0d12;
+    --panel: #12151d;
+    --ink: #e6e8ee;
+    --ink-2: #9aa0ae;
+    --hairline: rgba(255, 255, 255, 0.08);
+    --accent: #3987e5;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    background: var(--surface);
+    color: var(--ink);
+    font-family: system-ui, -apple-system, 'Segoe UI', sans-serif;
+    line-height: 1.6;
+  }
+  main {
+    max-width: 680px;
+    margin: 0 auto;
+    padding: 56px 24px 96px;
+  }
+  a { color: var(--accent); }
+  a:hover { color: #6ba7ee; }
+  .back {
+    display: inline-block;
+    font-size: 14px;
+    color: var(--ink-2);
+    text-decoration: none;
+    margin-bottom: 28px;
+  }
+  .back:hover { color: var(--ink); }
+  h1 { font-size: 28px; margin: 0 0 4px; }
+  .updated { color: var(--ink-2); font-size: 13px; margin: 0 0 40px; }
+  h2 {
+    font-size: 15px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: var(--ink-2);
+    margin: 40px 0 12px;
+    padding-top: 24px;
+    border-top: 1px solid var(--hairline);
+  }
+  h2:first-of-type { border-top: none; padding-top: 0; margin-top: 32px; }
+  p, li { color: var(--ink); font-size: 15px; }
+  p { margin: 0 0 14px; }
+  ul { margin: 0 0 14px; padding-left: 20px; }
+  li { margin-bottom: 8px; }
+  li:last-child { margin-bottom: 0; }
+  strong { color: var(--ink); }
+  .box {
+    background: var(--panel);
+    border: 1px solid var(--hairline);
+    border-radius: 10px;
+    padding: 18px 20px;
+    margin: 0 0 32px;
+  }
+  .box p:last-child { margin-bottom: 0; }
+  footer {
+    margin-top: 48px;
+    padding-top: 24px;
+    border-top: 1px solid var(--hairline);
+    font-size: 13px;
+    color: var(--ink-2);
+  }
+</style>
+</head>
+<body>
+<main>
+  <a class="back" href="./">&larr; Back to AnjunaTree</a>
+  <h1>Privacy Policy</h1>
+  <p class="updated">Last updated 20 August 2026</p>
+
+  <div class="box">
+    <p><strong>Short version:</strong> AnjunaTree has no accounts, no cookies, and no server to
+    collect anything on. Everything it stores lives only in your own browser. The only outside
+    services your browser talks to are Apple's iTunes Search API, and Spotify if you choose to
+    connect it.</p>
+  </div>
+
+  <h2>What's stored in your browser</h2>
+  <p>AnjunaTree is a static site with no backend — nothing below is ever sent to a server,
+  because there isn't one. Clearing your browser's site data for anjunatree.com removes all of
+  it.</p>
+  <ul>
+    <li><strong>Preferences</strong> — theme, text size, and accessibility settings.</li>
+    <li><strong>App version last seen</strong> — so the "what's new" changelog only shows
+    updates since your last visit.</li>
+    <li><strong>A Spotify session</strong>, if you connect one — an access/refresh token issued
+    directly by Spotify to your browser via PKCE OAuth. AnjunaTree's own code never sees your
+    Spotify password; sign-in happens entirely on Spotify's site. "Disconnect Spotify" in
+    Settings clears this.</li>
+    <li><strong>Your saved-releases cache</strong>, if you turn that setting on — a locally
+    cached list of which releases you've saved on Spotify, so the map doesn't have to re-check
+    on every visit.</li>
+  </ul>
+
+  <h2>Third-party services</h2>
+  <p>Your browser talks directly to these — AnjunaTree has no server in between, so it never
+  sees the requests or responses:</p>
+  <ul>
+    <li><strong>Apple's iTunes Search API</strong> — every 30-second preview clip and piece of
+    artwork is fetched live from Apple by your browser. Governed by Apple's own privacy
+    policy.</li>
+    <li><strong>Spotify</strong> — only if you choose to connect an account, for full-track
+    playback, your saved-releases list, and playlist export. Governed by
+    <a href="https://www.spotify.com/legal/privacy-policy/" target="_blank" rel="noreferrer">Spotify's Privacy Policy</a>.</li>
+    <li><strong>GitHub Pages</strong> — hosts and serves the site itself. Governed by
+    <a href="https://docs.github.com/en/site-policy/privacy-policies/github-general-privacy-statement" target="_blank" rel="noreferrer">GitHub's Privacy Statement</a>.</li>
+  </ul>
+
+  <h2>Analytics</h2>
+  <p>No analytics are enabled by default. Some deployments of this open-source project may
+  enable self-hosted, cookie-free <a href="https://umami.is" target="_blank" rel="noreferrer">Umami</a>
+  analytics, configured only by whoever runs that deployment. Umami does not use cookies and
+  does not collect personally identifying information, and respects Do Not Track when
+  enabled here. The project's source code (linked below) shows exactly how and when this can
+  turn on.</p>
+
+  <h2>What isn't collected</h2>
+  <p>No accounts, no email addresses, no IP-address logging by AnjunaTree itself, no
+  cross-site tracking, no advertising, no sale of data — there is no server for AnjunaTree to
+  collect or sell anything from.</p>
+
+  <h2>Changes</h2>
+  <p>If AnjunaTree's data handling ever changes, this page will be updated and the change
+  noted in the project's <a href="https://github.com/afterglowfc/anjunatree/blob/main/CHANGELOG.md" target="_blank" rel="noreferrer">changelog</a>.</p>
+
+  <h2>Questions</h2>
+  <p>AnjunaTree is maintained by volunteers on GitHub —
+  <a href="https://github.com/afterglowfc/anjunatree/issues/new" target="_blank" rel="noreferrer">open an issue</a>
+  with anything unclear.</p>
+
+  <footer>
+    <a class="back" href="./" style="margin-bottom:0;">&larr; Back to AnjunaTree</a>
+    &nbsp;·&nbsp;
+    <a href="./terms.html">Terms of Use</a>
+  </footer>
+</main>
+</body>
+</html>
