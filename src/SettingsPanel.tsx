@@ -253,6 +253,14 @@ export default function SettingsPanel({
                 {!configured && (
                   <p className="set-hint">Spotify connection isn&apos;t available yet.</p>
                 )}
+                {configured && (
+                  <p className="set-hint">
+                    Spotify caps this to approved accounts while it reviews AnjunaTree
+                    for public access — if Connect doesn&apos;t work for you yet, that&apos;s
+                    why, not a bug. Every release still plays a 30-second preview either
+                    way.
+                  </p>
+                )}
               </>
             )}
           </section>

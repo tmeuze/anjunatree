@@ -5,6 +5,18 @@ this list — what someone would actually notice, not every commit. This file
 is the fuller, developer-facing version; see `git log` for the complete
 history.
 
+## 2026-08-20 — Spotify quota note
+
+- Added a note under the "Connect Spotify" button (`SettingsPanel.tsx`)
+  explaining that Spotify currently caps login to accounts approved as
+  testers while the app is in Development Mode, so it's expected to
+  fail for most listeners right now — not a bug, and not something the
+  app can detect or message on its own, since Spotify blocks
+  non-whitelisted accounts at its own authorization screen before the
+  redirect ever reaches AnjunaTree. Every release still plays a
+  30-second preview regardless. Remove this note once Spotify approves
+  Extended Quota Mode for public access.
+
 ## 2026-08-20 — Moved to the Afterglow Fan Collective org
 
 - Repo transferred from `tmeuze/anjunatree` to
