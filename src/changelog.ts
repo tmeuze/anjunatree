@@ -8,7 +8,7 @@
 // Bump it alongside adding an entry here; see useUpdateFlow.ts for how it's
 // used to decide whether to show the changelog automatically.
 
-export const APP_VERSION = '2026.08.20e'
+export const APP_VERSION = '2026.08.20f'
 
 export interface ChangelogEntry {
   version: string
@@ -18,6 +18,14 @@ export interface ChangelogEntry {
 }
 
 export const CHANGELOG: ChangelogEntry[] = [
+  {
+    version: '2026.08.20f',
+    date: '20 August 2026',
+    title: 'Listen on…',
+    items: [
+      'Every release now has a "Listen on" row — Spotify, Apple Music, and YouTube Music — that works for everyone, no account needed',
+    ],
+  },
   {
     version: '2026.08.20e',
     date: '20 August 2026',

@@ -5,6 +5,37 @@ this list — what someone would actually notice, not every commit. This file
 is the fuller, developer-facing version; see `git log` for the complete
 history.
 
+## 2026-08-20 — "Listen on…" links
+
+- New `src/musicLinks.ts` and a "Listen on" row in `ReleasePanel.tsx`:
+  plain search-URL deep links to Spotify, Apple Music, and YouTube
+  Music, shown on every release for every visitor regardless of
+  connection state. No API call, no auth, nothing to sunset.
+- Two other approaches were checked and deliberately rejected first,
+  not just skipped:
+  - **Odesli/song.link** (one link resolving to the same track across
+    every service) — checked its current status before building on
+    it: Odesli has stopped issuing new API keys, and its API carries a
+    deprecation notice with a retirement date that's already passed
+    (still limping along past it, not something to build a real
+    dependency on now).
+  - **Exact-match links via Spotify's Client Credentials flow**
+    (app-level auth, no per-user login — and, unlike the per-user OAuth
+    flow this app already uses for playback, plausibly not subject to
+    Development Mode's 5-user cap at all, since that cap's own wording
+    is specifically about "authenticated Spotify users"). Genuinely
+    promising, but needs a client secret, and this is a fully static
+    site with nowhere safe to hold one — a `VITE_` variable would
+    expose it to every visitor's devtools, exactly the misuse
+    Spotify's own docs warn against. Not implemented; would need a
+    real architecture change (a server or serverless proxy) this
+    project has deliberately never had.
+- New `ExternalLinkIcon` in `Icons.tsx` — a generic "opens elsewhere"
+  glyph, deliberately not any service's own logo, so the row never
+  reads as branding or endorsement from Spotify/Apple/YouTube.
+- README's "Listen instantly" bullet updated to mention both Apple
+  Music and the new link row, alongside Spotify.
+
 ## 2026-08-20 — Apple Music: a second full-track provider
 
 - Built on a feature branch (`feature-apple-musickit-playback`), scoped

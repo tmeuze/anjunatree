@@ -5,7 +5,8 @@ import { LABEL_META, labelVar } from './data'
 import { SHAPE_LABEL } from './shapes'
 import { REPO_URL } from './constants'
 import { setStatus } from './status'
-import { ShareIcon } from './Icons'
+import { ExternalLinkIcon, ShareIcon } from './Icons'
+import { musicLinks } from './musicLinks'
 import type { AlbumTrack, MapNode, NowPlaying } from './types'
 import type { SpotifyState } from './useSpotify'
 
@@ -67,6 +68,11 @@ export default function ReleasePanel({
   const [retryToken, setRetryToken] = useState(0)
   const autoplayedFor = useRef<string | null>(null)
   const { rel } = node
+
+  // "Listen on…" search links — plain, no API call, works for every
+  // visitor regardless of connection state. See musicLinks.ts for why this
+  // is a search link rather than an exact-match one.
+  const listenLinks = useMemo(() => musicLinks(rel.artist, rel.title), [rel])
 
   // Credited artists, deduped, for the constellation chips.
   const artists = useMemo(() => {
@@ -279,6 +285,21 @@ export default function ReleasePanel({
           {[SHAPE_LABEL[node.shape], rel.year, rel.catno, LABEL_META[node.lane].name]
             .filter(Boolean)
             .join(' · ')}
+        </div>
+        <div className="panel-listen-links">
+          <span className="panel-listen-label">Listen on</span>
+          {listenLinks.map((l) => (
+            <a
+              key={l.id}
+              className="panel-listen-link"
+              href={l.url}
+              target="_blank"
+              rel="noreferrer"
+            >
+              {l.label}
+              <ExternalLinkIcon />
+            </a>
+          ))}
         </div>
       </div>
 

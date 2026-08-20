@@ -43,8 +43,9 @@ anything still to come.
 ### Everything else
 
 - **Listen instantly** — every release plays a 30-second iTunes preview, no
-  account needed. Connect Spotify Premium and the same releases play in
-  full.
+  account needed. Connect Spotify Premium or Apple Music and the same
+  releases play in full; a "Listen on…" link on every release also opens it
+  straight in Spotify, Apple Music, or YouTube Music, no account needed.
 - **Shareable links** — the URL always encodes your view, search, filters,
   and selection, so any moment on the map is a link you can send someone;
   a share button copies it, and the map can be exported as a PNG.
