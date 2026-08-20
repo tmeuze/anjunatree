@@ -1,0 +1,119 @@
+name: Bug report
+description: Something on the map is broken, wrong, or behaving unexpectedly.
+title: "[issue] "
+labels:
+  - bug
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for taking the time to report this. The more precise the
+        details below, the faster it's fixable — especially platform/browser,
+        since a lot of AnjunaTree's playback and layout code is
+        environment-dependent.
+
+  - type: textarea
+    id: description
+    attributes:
+      label: What happened?
+      description: A clear description of the bug. What did you expect instead?
+      placeholder: |
+        e.g. "Clicking a release in the Spectrum view opens the panel, but the
+        track list stays stuck on 'Loading…' forever."
+    validations:
+      required: true
+
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to reproduce
+      description: Numbered steps, from a fresh page load if possible.
+      placeholder: |
+        1. Open anjunatree.com
+        2. Switch to the Spectrum view
+        3. Search for "..."
+        4. Click the release
+    validations:
+      required: true
+
+  - type: dropdown
+    id: platform
+    attributes:
+      label: Platform
+      options:
+        - Web — Desktop
+        - Web — Mobile
+        - Installed PWA (added to home screen)
+    validations:
+      required: true
+
+  - type: input
+    id: os
+    attributes:
+      label: OS and version
+      placeholder: e.g. macOS 15.1, Windows 11, iOS 18.1, Android 14
+    validations:
+      required: true
+
+  - type: input
+    id: browser
+    attributes:
+      label: Browser and version
+      description: Menu → About/Help usually shows the exact version.
+      placeholder: e.g. Chrome 129, Safari 18, Firefox 131
+    validations:
+      required: true
+
+  - type: dropdown
+    id: view
+    attributes:
+      label: Which view were you on?
+      options:
+        - Labels
+        - Spectrum
+        - Not sure / doesn't matter
+    validations:
+      required: false
+
+  - type: dropdown
+    id: spotify
+    attributes:
+      label: Spotify connected?
+      description: Playback and library-sync bugs often depend on this.
+      options:
+        - Not connected (iTunes previews only)
+        - Connected — Premium
+        - Connected — Free
+        - Not sure
+    validations:
+      required: false
+
+  - type: input
+    id: url
+    attributes:
+      label: Link to the exact view (if you have it)
+      description: >-
+        AnjunaTree encodes view/search/filters/selection in the URL, so a
+        copied link often reproduces the exact state that triggered this.
+      placeholder: https://anjunatree.com/#...
+    validations:
+      required: false
+
+  - type: textarea
+    id: console
+    attributes:
+      label: Browser console errors (if any)
+      description: >-
+        Optional but very helpful. Open DevTools (F12 / Cmd+Opt+I), reproduce
+        the bug, and paste anything red from the Console tab.
+      render: text
+    validations:
+      required: false
+
+  - type: textarea
+    id: context
+    attributes:
+      label: Screenshots or additional context
+      description: Drag and drop images directly into this box.
+    validations:
+      required: false

@@ -1,0 +1,8 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Suggest a genre placement
+    url: https://github.com/tmeuze/anjunatree/discussions/new?category=genre-placement
+    about: Pushing back on where a specific release sits on the Spectrum view? Use the "Suggest a genre placement" button on that release's panel in the app instead — it opens this pre-filled.
+  - name: Something else / a question
+    url: https://github.com/tmeuze/anjunatree/discussions
+    about: General questions or discussion that isn't a bug or a concrete feature request.

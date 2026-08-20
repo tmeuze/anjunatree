@@ -1,0 +1,24 @@
+name: Add feature requests to roadmap
+
+# Adds newly opened issues labeled `enhancement` to the roadmap project
+# (https://github.com/users/tmeuze/projects/2). Deliberately does NOT set a
+# status/column — it lands wherever the project's default is, which should
+# be a "Triage" / "Needs review" column, not the active backlog. See
+# docs/DEVELOPMENT.md's "Issue templates & roadmap automation" section for
+# the one-time setup this workflow needs (a PAT with project scope) and the
+# reasoning behind not skipping triage.
+
+on:
+  issues:
+    types: [opened, labeled]
+
+jobs:
+  add-to-project:
+    if: contains(github.event.issue.labels.*.name, 'enhancement')
+    runs-on: ubuntu-latest
+    steps:
+      - name: Add issue to roadmap project
+        uses: actions/add-to-project@v1.0.2
+        with:
+          project-url: https://github.com/users/tmeuze/projects/2
+          github-token: ${{ secrets.ADD_TO_PROJECT_PAT }}

@@ -5,6 +5,24 @@ this list — what someone would actually notice, not every commit. This file
 is the fuller, developer-facing version; see `git log` for the complete
 history.
 
+## 2026-08-20 — Issue templates
+
+- Replaced free-text issue reporting with two [GitHub issue forms](https://docs.github.com/en/communities/using-templates-to-encourage-useful-issues-and-pull-requests/configuring-issue-templates-for-your-repository):
+  `bug_report.yml` (title prefixed `[issue] `, labeled `bug`, with required
+  Platform/OS/browser fields plus optional view, Spotify-connection state,
+  a state-encoding URL, and console errors) and `feature_request.yml`
+  (title prefixed `[feature] `, labeled `enhancement`, with a required
+  request-type dropdown: UI/UX, Functionality, Integration, Data/Catalogue,
+  Accessibility, Other). `config.yml` disables blank issues and points to
+  Discussions for genre-placement pushback and general questions instead.
+- New `.github/workflows/add-feature-to-roadmap.yml` auto-adds every
+  `enhancement`-labeled issue to the
+  [roadmap project](https://github.com/users/tmeuze/projects/2). Doesn't set
+  a status, by design — see docs/DEVELOPMENT.md's "Issue templates &
+  roadmap automation" for the reasoning (a public request shouldn't silently
+  become a commitment) and the one-time PAT setup this needs, which can't be
+  done from the repo itself.
+
 ## 2026-08-20 — README overhaul
 
 - Rebuilt `README.md` around the app's actual distinguishing features

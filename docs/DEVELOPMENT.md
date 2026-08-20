@@ -269,6 +269,50 @@ If `npm audit` fails a build:
    it as urgent — but don't just raise `--audit-level` to make the failure
    go away. Open an issue if it needs a real decision.
 
+## Issue templates & roadmap automation
+
+Bug reports and feature requests use [GitHub issue forms](https://docs.github.com/en/communities/using-templates-to-encourage-useful-issues-and-pull-requests/configuring-issue-templates-for-your-repository)
+(`.github/ISSUE_TEMPLATE/bug_report.yml`, `feature_request.yml`) rather than
+free-text templates, so every report arrives with the fields actually needed
+to act on it (platform/OS/browser for bugs; a request-type category for
+features) instead of a blank box. `config.yml` disables blank issues and
+points to Discussions instead for genre-placement pushback and general
+questions.
+
+**`.github/workflows/add-feature-to-roadmap.yml`** auto-adds every issue
+labeled `enhancement` (i.e. every feature request, since the template
+applies that label) to the [roadmap project](https://github.com/users/tmeuze/projects/2).
+
+This intentionally does **not** skip moderation — it does not set a
+status/column, so it lands wherever the project's default new-item status
+is. Anyone can open a feature request, including low-effort or duplicate
+ones, so the recommended setup is a **"Needs triage"** (or similarly named)
+status as the project's default for new items, kept separate from whatever
+column represents "actually planned." That gives every request public
+visibility on the board without an issue silently becoming a commitment the
+moment someone files it — move it into the real backlog by hand once it's
+been read. Bugs are not added to the roadmap project at all; they're tracked
+as plain labeled issues.
+
+One-time setup this workflow needs (can't be done from the repo — account
+settings):
+
+1. Create a **classic Personal Access Token** with the `project` scope at
+   <https://github.com/settings/tokens> (a fine-grained token with
+   *read/write access to Projects* under your account also works).
+2. Add it as a repository secret named `ADD_TO_PROJECT_PAT` (**Settings →
+   Secrets and variables → Actions → New repository secret**) — the default
+   `GITHUB_TOKEN` can't write to user-owned Projects (v2), only a real PAT
+   can.
+3. On the project itself, make sure a "Needs triage" (or equivalent) status
+   exists and is set as the default for newly added items, so this
+   automation actually lands requests somewhere reviewable rather than
+   straight into the active plan.
+
+Until the secret exists, the workflow run fails harmlessly (issue still
+gets filed and labeled normally) — check the Actions tab if requests aren't
+showing up on the board.
+
 ## Roadmap
 
 - [x] Full-track playback via the Spotify Web Playback SDK for Premium

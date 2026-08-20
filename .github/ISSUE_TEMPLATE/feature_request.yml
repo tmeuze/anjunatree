@@ -1,0 +1,64 @@
+name: Feature request
+description: Suggest something AnjunaTree doesn't do yet.
+title: "[feature] "
+labels:
+  - enhancement
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Ideas and corrections are genuinely welcome — the editorial parts of
+        this project (genre placement, label groupings, milestones) are meant
+        to be argued with. Note: if this is about a specific release's
+        **Spectrum position**, use that release's own "Suggest a genre
+        placement" button in the app instead — it opens a pre-filled
+        Discussion built for exactly that, and is a better fit than an issue.
+
+  - type: dropdown
+    id: type
+    attributes:
+      label: Request type
+      options:
+        - UI/UX — how something looks, is laid out, or is discovered
+        - Functionality — new capability or behavior on the map
+        - Integration — a new data source or service (streaming, MusicBrainz, etc.)
+        - Data/Catalogue — a label, artist, or release that's missing or miscategorized
+        - Accessibility
+        - Other
+    validations:
+      required: true
+
+  - type: textarea
+    id: problem
+    attributes:
+      label: What problem does this solve?
+      description: What are you trying to do, and where does AnjunaTree get in the way?
+      placeholder: |
+        e.g. "I follow a few artists across labels, but there's no way to
+        save a shortlist without bookmarking individual constellation links."
+    validations:
+      required: true
+
+  - type: textarea
+    id: proposal
+    attributes:
+      label: What would you like to happen?
+      description: Your proposed solution, however rough. Sketches/mockups welcome.
+    validations:
+      required: true
+
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives you've considered
+      description: Optional — other ways to solve the same problem, and why they're worse.
+    validations:
+      required: false
+
+  - type: textarea
+    id: context
+    attributes:
+      label: Additional context
+      description: Screenshots, links, or examples from other apps. Drag and drop images directly into this box.
+    validations:
+      required: false
