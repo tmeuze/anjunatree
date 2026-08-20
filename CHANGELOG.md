@@ -5,6 +5,18 @@ this list — what someone would actually notice, not every commit. This file
 is the fuller, developer-facing version; see `git log` for the complete
 history.
 
+## 2026-08-20 — Countdown
+
+- Announced releases in `Latest.tsx` (Release Tracker) now show a
+  countdown pill: `countdownLabel()` reads "today"/"tomorrow" under two
+  weeks out, "in N weeks" under two months, "in N months" beyond that —
+  coarser the further out, since "in 87 days" isn't more useful than "in
+  3 months" and just reads as a stopwatch. Only rendered on upcoming rows
+  (`Row`'s new `countdown` prop); "out now" rows are unaffected.
+- Shortened the footer disclaimer from three sentences to one — same legal
+  content (fan project, not affiliated, not endorsed, rights holders),
+  fewer words to read every time it's visible.
+
 ## 2026-08-20 — Share it
 
 - **Share link button** (`ShareIcon`, `ReleasePanel.tsx`): copies

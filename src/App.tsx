@@ -696,9 +696,9 @@ export default function App() {
 
       <footer className="site-footer">
         <span>
-          A passion project by a fan. <strong>Not affiliated with</strong> Anjunabeats,
-          Anjunadeep, Anjunachill, Involved Group, or any artist — and not endorsed by
-          them. All music and artwork belong to their rights holders.
+          A fan project, <strong>not affiliated with or endorsed by</strong> Anjunabeats,
+          Anjunadeep, Anjunachill, Involved Group, or any artist. Music and artwork
+          belong to their rights holders.
         </span>
         <span className="footer-links">
           <a href={REPO_URL} target="_blank" rel="noreferrer noopener">

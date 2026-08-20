@@ -23,6 +23,18 @@ const dayLabel = (rel: { date: string }) => {
   return String(Number(parts[2]))
 }
 
+/** "today" / "tomorrow" / "in 5 days" / "in 3 weeks" / "in 4 months" — coarser
+ * the further out a release is, since "in 87 days" isn't more useful to a
+ * listener than "in 3 months" and just reads as a stopwatch. */
+const countdownLabel = (releaseTime: number, now: number): string => {
+  const days = Math.ceil((releaseTime - now) / 86_400_000)
+  if (days <= 0) return 'today'
+  if (days === 1) return 'tomorrow'
+  if (days < 14) return `in ${days} days`
+  if (days < 60) return `in ${Math.round(days / 7)} weeks`
+  return `in ${Math.round(days / 30)} months`
+}
+
 function group(nodes: MapNode[]) {
   const out: { month: string; items: MapNode[] }[] = []
   for (const n of nodes) {
@@ -34,16 +46,17 @@ function group(nodes: MapNode[]) {
 }
 
 export default function Latest({ layout, generatedAt, selectedId, onSelect, onClose }: Props) {
+  const now = useMemo(() => Date.now(), [])
+
   const { upcoming, recent } = useMemo(() => {
-    const now = Date.now()
     const sorted = [...layout.nodes].sort((a, b) => b.time - a.time)
     return {
       upcoming: sorted.filter((n) => n.time > now).reverse(),
       recent: sorted.filter((n) => n.time <= now).slice(0, MAX_ROWS),
     }
-  }, [layout])
+  }, [layout, now])
 
-  const Row = ({ n }: { n: MapNode }) => (
+  const Row = ({ n, countdown }: { n: MapNode; countdown?: boolean }) => (
     <button
       className={`latest-row${n.rel.id === selectedId ? ' on' : ''}`}
       onClick={() => onSelect(n)}
@@ -59,6 +72,7 @@ export default function Latest({ layout, generatedAt, selectedId, onSelect, onCl
           {n.rel.catno ? ` · ${n.rel.catno}` : ''}
         </span>
       </span>
+      {countdown && <span className="latest-countdown">{countdownLabel(n.time, now)}</span>}
     </button>
   )
 
@@ -78,7 +92,7 @@ export default function Latest({ layout, generatedAt, selectedId, onSelect, onCl
               <section key={`u-${g.month}`}>
                 <h3 className="latest-month">{g.month}</h3>
                 {g.items.map((n) => (
-                  <Row key={n.rel.id} n={n} />
+                  <Row key={n.rel.id} n={n} countdown />
                 ))}
               </section>
             ))}

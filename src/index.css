@@ -1483,10 +1483,24 @@ body {
 }
 
 .latest-main {
+  flex: 1;
   min-width: 0;
   display: flex;
   flex-direction: column;
   gap: 2px;
+}
+
+.latest-countdown {
+  flex-shrink: 0;
+  align-self: center;
+  padding: 3px 8px;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--label-reflections) 16%, transparent);
+  border: 1px solid color-mix(in srgb, var(--label-reflections) 40%, transparent);
+  color: var(--ink-secondary);
+  font-size: calc(10px * var(--font-scale));
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
 }
 
 .latest-title {

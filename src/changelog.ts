@@ -8,7 +8,7 @@
 // Bump it alongside adding an entry here; see useUpdateFlow.ts for how it's
 // used to decide whether to show the changelog automatically.
 
-export const APP_VERSION = '2026.08.20c'
+export const APP_VERSION = '2026.08.20d'
 
 export interface ChangelogEntry {
   version: string
@@ -18,6 +18,15 @@ export interface ChangelogEntry {
 }
 
 export const CHANGELOG: ChangelogEntry[] = [
+  {
+    version: '2026.08.20d',
+    date: '20 August 2026',
+    title: 'Countdown',
+    items: [
+      'Announced releases in the Release Tracker now show how far off they are — "in 8 days", "in 3 weeks", and so on',
+      'Trimmed the footer disclaimer down to one clear sentence',
+    ],
+  },
   {
     version: '2026.08.20c',
     date: '20 August 2026',
