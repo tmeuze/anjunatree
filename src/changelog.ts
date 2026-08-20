@@ -8,7 +8,7 @@
 // Bump it alongside adding an entry here; see useUpdateFlow.ts for how it's
 // used to decide whether to show the changelog automatically.
 
-export const APP_VERSION = '2026.08.20b'
+export const APP_VERSION = '2026.08.20c'
 
 export interface ChangelogEntry {
   version: string
@@ -18,6 +18,15 @@ export interface ChangelogEntry {
 }
 
 export const CHANGELOG: ChangelogEntry[] = [
+  {
+    version: '2026.08.20c',
+    date: '20 August 2026',
+    title: 'Share it',
+    items: [
+      'A share button on every release panel copies a link to that release, or to the artist constellation you’re tracing',
+      'Save the map as a PNG from Settings — whatever view, theme and selection you’re looking at, with optional transparency and watermark',
+    ],
+  },
   {
     version: '2026.08.20b',
     date: '20 August 2026',

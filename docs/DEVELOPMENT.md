@@ -293,3 +293,22 @@ If `npm audit` fails a build:
       color rather than one per label).
 - [ ] Replace the curated spectrum with real genre data (MusicBrainz
       genre-tag crawl per release-group).
+- [x] Share a link to an artist's constellation or a single release — the
+      hash already encodes both (`App.tsx`'s URL-sync effect), so this
+      shipped as a small "copy link" button (`ReleasePanel.tsx`'s share
+      icon) rather than new plumbing.
+- [x] Export the current map view as a PNG, with a couple of display
+      options (transparent background, watermark) — `App.tsx`'s
+      `exportMapImage`, triggered from Settings. Composites onto an
+      offscreen canvas so it never touches the live one.
+- [ ] **Deferred, deliberately:** real per-share preview images — a link to
+      a specific artist's constellation showing *their* artwork in the
+      Discord/iMessage/Slack preview, not the generic site-wide social
+      card. The cheap version above (copy-link + PNG export) covers
+      sharing today; doing this properly needs either a serverless
+      function (the first non-static piece this project would ever have)
+      or pre-generating a static image+HTML shell per artist at build
+      time (thousands of artists, meaningful build-size/complexity cost).
+      Worth a deliberate decision, not a default yes — see the
+      conversation that raised it (`map.anjunatree.com` was the subdomain
+      floated for it) before starting.

@@ -91,6 +91,18 @@ export function StopIcon({ className }: IconProps) {
   )
 }
 
+/** The classic "box with an arrow escaping upward" — reads as "share"
+ * without needing a platform-specific share-sheet icon. */
+export function ShareIcon({ className }: IconProps) {
+  return (
+    <svg {...common} className={className}>
+      <path d="M8 10V2" />
+      <path d="M4.8 5.2 8 2l3.2 3.2" />
+      <path d="M3 8v4a1 1 0 0 0 1 1h8a1 1 0 0 0 1-1V8" />
+    </svg>
+  )
+}
+
 /** A sprout — used where the app is introducing itself ("new & growing"),
  * standing in for the 🌱 emoji so it tints with the theme like every other
  * icon instead of always rendering in its own fixed colour. */

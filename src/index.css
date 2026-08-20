@@ -431,6 +431,31 @@ body {
   color: var(--ink);
 }
 
+.panel-share {
+  position: absolute;
+  top: 8px;
+  left: 8px;
+  z-index: 2;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: color-mix(in srgb, var(--surface) 70%, transparent);
+  border: none;
+  border-radius: 6px;
+  color: var(--ink-secondary);
+  cursor: pointer;
+  padding: 6px 9px;
+}
+
+.panel-share:hover {
+  color: var(--ink);
+}
+
+.panel-share svg {
+  width: 14px;
+  height: 14px;
+}
+
 .panel-hero {
   padding: 18px 18px 12px;
   text-align: center;

@@ -13,6 +13,7 @@ import ReleasePanel, { VARIOUS_ARTISTS_MBID } from './ReleasePanel'
 import SettingsPanel from './SettingsPanel'
 import ShapeLegend from './ShapeLegend'
 import StatusToasts from './StatusToasts'
+import { setStatus } from './status'
 import { LABEL_KEYS, LABEL_META, layoutCatalog, loadCatalog, labelVar } from './data'
 import type { CatalogLayout } from './data'
 import { applySettings, loadSettings, saveSettings, scaleOf } from './settings'
@@ -51,6 +52,7 @@ function parseHash(): HashState {
 
 export default function App() {
   const initial = useRef(parseHash())
+  const mapCanvasRef = useRef<HTMLCanvasElement>(null)
   const [layout, setLayout] = useState<CatalogLayout | null>(null)
   const [error, setError] = useState<string | null>(null)
   const [query, setQuery] = useState(initial.current.query)
@@ -202,6 +204,18 @@ export default function App() {
       .sort((a, b) => a.time - b.time)
   }, [layout, constellationId])
 
+  // Same lookup ReleasePanel does for its own share/export labels — kept
+  // here too since the map-image export filename wants it and shouldn't
+  // depend on the panel being open.
+  const constellationArtistName = useMemo(() => {
+    if (!constellationId) return null
+    for (const n of constellation) {
+      const i = n.rel.artistIds.indexOf(constellationId)
+      if (i >= 0) return n.rel.artists[i] ?? n.rel.artist
+    }
+    return null
+  }, [constellation, constellationId])
+
   // Which releases match the listener's saved Spotify albums/tracks, by the
   // same release-level key spotify.ts builds from the saved side — computed
   // once per catalogue/library pair, not per animation frame, since
@@ -285,6 +299,60 @@ export default function App() {
   const matchCount = useMemo(
     () => (layout ? layout.nodes.filter(isActive).length : 0),
     [layout, isActive],
+  )
+
+  // The canvas itself is transparent (the glow behind it is CSS on
+  // .map-wrap) — that's the correct default for "transparent background",
+  // and for "themed background" a solid surface-colour fill goes underneath
+  // on a fresh composite canvas rather than touching the live one, so
+  // exporting can never flash or disturb what's on screen.
+  const exportMapImage = useCallback(
+    (opts: { transparent: boolean; watermark: boolean }) => {
+      const source = mapCanvasRef.current
+      if (!source || !source.width || !source.height) {
+        setStatus('map-export', 'error', 'Nothing to export yet — give the map a second to load.')
+        return
+      }
+      const out = document.createElement('canvas')
+      out.width = source.width
+      out.height = source.height
+      const ctx = out.getContext('2d')
+      if (!ctx) return
+      if (!opts.transparent) {
+        ctx.fillStyle = theme.colors.surface
+        ctx.fillRect(0, 0, out.width, out.height)
+      }
+      ctx.drawImage(source, 0, 0)
+      if (opts.watermark) {
+        const scale = out.width / source.clientWidth || 1
+        ctx.font = `600 ${13 * scale}px system-ui, sans-serif`
+        ctx.textAlign = 'right'
+        ctx.textBaseline = 'bottom'
+        ctx.fillStyle = opts.transparent ? theme.colors.ink : theme.colors.inkSecondary
+        ctx.globalAlpha = 0.85
+        ctx.fillText('anjunatree.com', out.width - 14 * scale, out.height - 12 * scale)
+        ctx.globalAlpha = 1
+      }
+
+      out.toBlob((blob) => {
+        if (!blob) {
+          setStatus('map-export', 'error', "Couldn't generate the image.")
+          return
+        }
+        const artistSlug = constellationArtistName
+          ? `-${constellationArtistName.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '')}`
+          : ''
+        const dateSlug = new Date().toISOString().slice(0, 10)
+        const url = URL.createObjectURL(blob)
+        const a = document.createElement('a')
+        a.href = url
+        a.download = `anjunatree-${view}${artistSlug}-${dateSlug}.png`
+        a.click()
+        URL.revokeObjectURL(url)
+        setStatus('map-export', 'info', 'Image saved.')
+      }, 'image/png')
+    },
+    [theme.colors, view, constellationArtistName],
   )
 
   return (
@@ -565,6 +633,7 @@ export default function App() {
           )}
           <div className="map-wrap">
             <MapCanvas
+              ref={mapCanvasRef}
               layout={layout}
               view={view}
               isActive={isActive}
@@ -651,6 +720,7 @@ export default function App() {
             setShowSettings(false)
             setAuthError(null)
           }}
+          onExportImage={exportMapImage}
         />
       )}
       <StatusToasts />

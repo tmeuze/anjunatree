@@ -5,6 +5,33 @@ this list — what someone would actually notice, not every commit. This file
 is the fuller, developer-facing version; see `git log` for the complete
 history.
 
+## 2026-08-20 — Share it
+
+- **Share link button** (`ShareIcon`, `ReleasePanel.tsx`): copies
+  `window.location.href` — no new plumbing, since the hash already encodes
+  the current release/constellation selection (`App.tsx`'s URL-sync
+  effect). Label and toast text adapt based on whether a constellation is
+  active (`constellationArtistName`) vs. just a single release.
+- **PNG export** (`App.tsx`'s `exportMapImage`, triggered from a new
+  Settings "Export" section): reads the live `<canvas>` via
+  `MapCanvas`'s new `forwardRef`/`useImperativeHandle` (exposing the raw
+  canvas element, not a custom export API, so the export can never drift
+  from the component's own render logic), composites it onto a *new*
+  offscreen canvas (never touches the live one — no flash), with two
+  options: transparent background (the canvas itself already has none —
+  the glow behind it is CSS on `.map-wrap`) vs. filling the current
+  theme's surface colour, and an optional small `anjunatree.com`
+  watermark. Downloads via a Blob URL and a synthetic `<a download>`
+  click; filename includes the current view, constellation artist (if
+  any), and date.
+- **Deliberately deferred**: real per-artist share preview images (a
+  link to a constellation showing that artist's own artwork in a
+  Discord/Slack/iMessage preview). Would need either a serverless
+  function or a per-artist static build step — a real architecture
+  decision for a project that's been fully static end-to-end, not
+  something to default into. Recorded in docs/DEVELOPMENT.md's roadmap
+  rather than built.
+
 ## 2026-08-20 — Matching icons
 
 - **Replaced colour emoji with theme-aware SVG icons.** Emoji render in

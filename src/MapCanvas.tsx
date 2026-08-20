@@ -1,4 +1,4 @@
-import { useEffect, useRef } from 'react'
+import { forwardRef, useEffect, useImperativeHandle, useRef } from 'react'
 import { select, zoom, zoomIdentity, quadtree } from 'd3'
 import type { ZoomTransform, Quadtree } from 'd3'
 import { LABEL_KEYS, LABEL_META, WORLD, spectrumToY } from './data'
@@ -36,23 +36,31 @@ const SPECTRUM_BANDS = [
   { s: 0.9, label: 'AMBIENT / CHILL' },
 ]
 
-export default function MapCanvas({
-  layout,
-  view,
-  isActive,
-  constellation,
-  selectedId,
-  onSelect,
-  colors,
-  fontScale,
-  highContrast,
-  reduceMotion,
-  largeMarks,
-  savedNodeIds,
-}: Props) {
+export default forwardRef<HTMLCanvasElement, Props>(function MapCanvas(
+  {
+    layout,
+    view,
+    isActive,
+    constellation,
+    selectedId,
+    onSelect,
+    colors,
+    fontScale,
+    highContrast,
+    reduceMotion,
+    largeMarks,
+    savedNodeIds,
+  },
+  exportRef,
+) {
   const containerRef = useRef<HTMLDivElement>(null)
   const canvasRef = useRef<HTMLCanvasElement>(null)
   const tooltipRef = useRef<HTMLDivElement>(null)
+  // Exposes the raw canvas element only — image export (App.tsx) reads its
+  // current pixels directly rather than this component owning an export API,
+  // so exporting "what the map currently draws" never drifts from this
+  // component's own render logic.
+  useImperativeHandle(exportRef, () => canvasRef.current as HTMLCanvasElement, [])
 
   // Live values the draw loop reads without re-running the setup effect.
   const stateRef = useRef({
@@ -518,4 +526,4 @@ export default function MapCanvas({
       <div ref={tooltipRef} className="tooltip" />
     </div>
   )
-}
+})

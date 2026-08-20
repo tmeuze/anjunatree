@@ -5,6 +5,7 @@ import { LABEL_META, labelVar } from './data'
 import { SHAPE_LABEL } from './shapes'
 import { REPO_URL } from './constants'
 import { setStatus } from './status'
+import { ShareIcon } from './Icons'
 import type { AlbumTrack, MapNode, NowPlaying } from './types'
 import type { SpotifyState } from './useSpotify'
 
@@ -95,6 +96,24 @@ export default function ReleasePanel({
 
   const canExportPlaylist =
     Boolean(spotify.session) && !spotify.needsReconnect && constellation.length > 1
+
+  // The hash already encodes the current selection and constellation (see
+  // App.tsx's URL-sync effect) — sharing is just handing someone this exact
+  // address, dressed up as a button instead of "copy the URL bar yourself".
+  const copyShareLink = async () => {
+    try {
+      await navigator.clipboard.writeText(window.location.href)
+      setStatus(
+        'share-link',
+        'info',
+        constellationArtistName
+          ? `Copied a link to ${constellationArtistName}’s constellation.`
+          : 'Copied a link to this release.',
+      )
+    } catch {
+      setStatus('share-link', 'error', "Couldn't copy the link — copy it from the address bar.")
+    }
+  }
 
   const exportConstellationPlaylist = async () => {
     if (!constellationArtistName || exporting) return
@@ -226,6 +245,22 @@ export default function ReleasePanel({
 
   return (
     <aside className="panel">
+      <button
+        className="panel-share"
+        onClick={copyShareLink}
+        aria-label={
+          constellationArtistName
+            ? `Copy link to ${constellationArtistName}'s constellation`
+            : 'Copy link to this release'
+        }
+        title={
+          constellationArtistName
+            ? `Copy link to ${constellationArtistName}'s constellation`
+            : 'Copy link to this release'
+        }
+      >
+        <ShareIcon />
+      </button>
       <button className="panel-close" onClick={onClose} aria-label="Close panel">
         ✕
       </button>

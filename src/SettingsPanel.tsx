@@ -1,3 +1,4 @@
+import { useState } from 'react'
 import { FONT_SCALES } from './settings'
 import type { Settings } from './settings'
 import * as spotify from './spotify'
@@ -10,6 +11,7 @@ interface Props {
   /** Message from a failed sign-in redirect, if this load came back from one. */
   authError: string | null
   onClose: () => void
+  onExportImage: (opts: { transparent: boolean; watermark: boolean }) => void
 }
 
 /** "just now" / "12 min ago" / "3 hr ago" / "2 days ago" — coarse on purpose,
@@ -52,8 +54,11 @@ export default function SettingsPanel({
   spotify: sp,
   authError,
   onClose,
+  onExportImage,
 }: Props) {
   const configured = spotify.isConfigured()
+  const [transparentExport, setTransparentExport] = useState(false)
+  const [watermarkExport, setWatermarkExport] = useState(true)
 
   const set = <K extends keyof Settings>(key: K, value: Settings[K]) =>
     onChange({ ...settings, [key]: value })
@@ -118,6 +123,36 @@ export default function SettingsPanel({
               Release types are drawn as different shapes, not just colours, so the map
               is readable without relying on colour at all.
             </p>
+          </section>
+
+          <section>
+            <h3>Export</h3>
+            <p className="set-hint">
+              Saves exactly what the map currently shows — whatever view, theme,
+              zoom and selection you&apos;re looking at.
+            </p>
+            <Toggle
+              label="Transparent background"
+              hint="Off fills in your current theme's background colour; on drops it, for pasting onto something else."
+              checked={transparentExport}
+              onChange={setTransparentExport}
+            />
+            <Toggle
+              label="Include anjunatree.com watermark"
+              hint="A small credit in the corner — on by default so a shared image still points back here."
+              checked={watermarkExport}
+              onChange={setWatermarkExport}
+            />
+            <div className="set-buttons">
+              <button
+                className="set-button primary"
+                onClick={() =>
+                  onExportImage({ transparent: transparentExport, watermark: watermarkExport })
+                }
+              >
+                Save map as image
+              </button>
+            </div>
           </section>
 
           <section>
