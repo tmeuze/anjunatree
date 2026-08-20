@@ -1,33 +1,53 @@
-# AnjunaTree
-
-**The Anjuna music catalogue, visualised.** An interactive map of the
-Anjunabeats / Anjunadeep / Anjunachill catalogue — every release since 2000
-plotted on a zoomable timeline, with 30-second previews on click.
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="docs/hero-dark.svg">
+  <img alt="AnjunaTree — the Anjuna music catalogue, visualised" src="docs/hero-light.svg" width="620">
+</picture>
 
 **→ [anjunatree.com](https://anjunatree.com)**
 
-An unaffiliated, non-commercial fan project. Not associated with or endorsed by
-Anjunabeats, Anjunadeep, Anjunachill, Involved Group, or any artist.
+An interactive map of the Anjunabeats / Anjunadeep / Anjunachill catalogue —
+every release since 2000 plotted on a zoomable timeline, with 30-second
+previews on click. An unaffiliated, non-commercial fan project. Not
+associated with or endorsed by Anjunabeats, Anjunadeep, Anjunachill, Involved
+Group, or any artist.
+
+![The Labels view, showing the full catalogue across all three labels](docs/screenshots/view-labels.png)
 
 ## What it does
 
-Two views: **Labels** (one lane per label) and **Spectrum** (releases arranged
-along a curated trance → ambient genre axis), with an animated transition
-between them. Release types are encoded as shapes — square = studio album,
-diamond = compilation/mix (the *Volumes*), ring = remix package,
-triangle = EP, circle = single — with a legend that recomputes against the
-active filters.
+Two views: **Labels** (one lane per label) and **Spectrum** (releases
+arranged along a curated trance → ambient genre axis), with an animated
+transition between them. Release types are encoded as shapes — square =
+studio album, diamond = compilation/mix (the *Volumes*), ring = remix
+package, triangle = EP, circle = single — with a legend that recomputes
+against the active filters.
+
+<img src="docs/screenshots/view-spectrum.png" alt="The Spectrum view, arranging releases along a trance-to-ambient genre axis" width="49%"> <img src="docs/screenshots/surprise-me.png" alt="A release panel open, with a constellation lit up and the player bar active" width="49%">
+
+### Surprise Me
+
+Press play and it walks the map for you, one preview at a time —
+chronologically, or through the constellation you're currently viewing.
+Click any release and every other release by that artist lights up,
+connected chronologically across the whole catalogue, so you can follow one
+artist's arc across labels and years.
+
+### Release Tracker
+
+A changelog-style feed of what's just come out and what's announced but not
+released yet, with a running countdown ("in 8 days", "in 3 weeks") on
+anything still to come.
+
+<img src="docs/screenshots/release-tracker.png" alt="The Release Tracker panel, with countdown pills on upcoming releases" width="520">
+
+### Everything else
 
 - **Listen instantly** — every release plays a 30-second iTunes preview, no
-  account needed. Connect Spotify Premium and the same releases play in full.
-- **Constellations** — click a release and every other release by that artist
-  lights up, connected chronologically across the whole catalogue.
-- **Surprise Me** — press play and it walks the map for you, one preview at a
-  time, chronologically or through the constellation you're viewing.
-- **Release Tracker** — a changelog-style feed of what's just come out and
-  what's announced but not released yet.
-- **Shareable links** — the URL always encodes your view, search, filters, and
-  selection, so any moment on the map is a link you can send someone.
+  account needed. Connect Spotify Premium and the same releases play in
+  full.
+- **Shareable links** — the URL always encodes your view, search, filters,
+  and selection, so any moment on the map is a link you can send someone;
+  a share button copies it, and the map can be exported as a PNG.
 - **Make it yours** — connect Spotify and, if you turn it on, your saved
   albums and tracks get rung on the map; any artist's constellation can be
   exported as a private Spotify playlist.

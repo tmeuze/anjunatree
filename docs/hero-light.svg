@@ -1,0 +1,49 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 620 160" width="620" height="160">
+  <defs>
+    <linearGradient id="s-light" gradientUnits="userSpaceOnUse" x1="256" y1="499" x2="256" y2="12">
+      <stop offset="0" stop-color="#6b6a66"/>
+      <stop offset="1" stop-color="#14161a"/>
+    </linearGradient>
+    <linearGradient id="c-light" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0" stop-color="#3987e5"/>
+      <stop offset="0.5" stop-color="#199e70"/>
+      <stop offset="1" stop-color="#d95926"/>
+    </linearGradient>
+    <linearGradient id="f-light" x1="0" y1="1" x2="0" y2="0">
+      <stop offset="0" stop-color="#199e70"/>
+      <stop offset="1" stop-color="#3987e5"/>
+    </linearGradient>
+  </defs>
+  <g transform="translate(10, -10) scale(0.28)">
+    <g stroke="url(#s-light)" stroke-width="5.333333" stroke-linecap="round" fill="none">
+      <line x1="83" y1="474" x2="428" y2="474"/>
+      <line x1="132" y1="474" x2="132" y2="499"/>
+      <line x1="256" y1="474" x2="256" y2="493"/>
+      <line x1="316.25" y1="474" x2="316.38" y2="486.54"/>
+      <line x1="190.13" y1="474" x2="190.13" y2="486.46"/>
+      <line x1="380" y1="474" x2="380" y2="499"/>
+    </g>
+    <line x1="256" y1="318.33" x2="256" y2="467.67" stroke="url(#s-light)" stroke-width="16" stroke-linecap="square"/>
+    <g fill="url(#c-light)">
+      <circle cx="181.33" cy="286.33" r="13.87"/>
+      <circle cx="256" cy="275.67" r="18.13"/>
+      <circle cx="330.67" cy="286.33" r="13.87"/>
+      <circle cx="138.67" cy="227.67" r="11.73"/>
+      <circle cx="213.33" cy="222.33" r="18.13"/>
+      <circle cx="298.67" cy="222.33" r="16"/>
+      <circle cx="373.33" cy="227.67" r="11.73"/>
+      <circle cx="256" cy="179.67" r="18.13"/>
+    </g>
+    <g stroke="url(#f-light)" stroke-width="13.866666" stroke-linecap="round" fill="none">
+      <line x1="256" y1="134.67" x2="256" y2="12"/>
+      <line x1="256" y1="134.67" x2="182.4" y2="33.87"/>
+      <line x1="256" y1="134.67" x2="329.6" y2="33.87"/>
+      <line x1="256" y1="134.67" x2="135.47" y2="90.93"/>
+      <line x1="256" y1="134.67" x2="376.53" y2="90.93"/>
+      <line x1="256" y1="134.67" x2="132.27" y2="167.73"/>
+      <line x1="256" y1="134.67" x2="379.73" y2="167.73"/>
+    </g>
+  </g>
+  <text x="160" y="76" font-family="'Helvetica Neue', Helvetica, Arial, sans-serif" font-size="44" letter-spacing="1" fill="#14161a">Anjuna<tspan font-weight="700">Tree</tspan></text>
+  <text x="161" y="102" font-family="'Helvetica Neue', Helvetica, Arial, sans-serif" font-size="15" fill="#52514e">the Anjuna music catalogue, visualised</text>
+</svg>
