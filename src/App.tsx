@@ -23,6 +23,7 @@ import type { ThemeId } from './themes'
 import { SlidersIcon } from './Icons'
 import * as spotify from './spotify'
 import { useSpotify } from './useSpotify'
+import { useAppleMusic } from './useAppleMusic'
 import { useUpdateFlow } from './useUpdateFlow'
 import { LABEL_SITE_URL, REPO_URL } from './constants'
 import type { LabelKey, MapNode, NowPlaying, ViewKey } from './types'
@@ -72,6 +73,7 @@ export default function App() {
   const [generatedAt, setGeneratedAt] = useState<string | null>(null)
   const [authError, setAuthError] = useState<string | null>(null)
   const spotifyState = useSpotify()
+  const appleMusicState = useAppleMusic()
   const updateFlow = useUpdateFlow()
 
   // A cacheless refresh (UpdatePrompt) appends a one-off cache-busting query
@@ -684,6 +686,7 @@ export default function App() {
           nowPlaying={nowPlaying}
           paused={playerPaused}
           spotify={spotifyState}
+          apple={appleMusicState}
           onPausedChange={setPlayerPaused}
           onEnded={handleTrackEnded}
           onJumpTo={() => selectNode(nowPlaying.node)}
@@ -717,6 +720,7 @@ export default function App() {
           settings={settings}
           onChange={setSettings}
           spotify={spotifyState}
+          apple={appleMusicState}
           authError={authError}
           onClose={() => {
             setShowSettings(false)

@@ -3,11 +3,14 @@ import { FONT_SCALES } from './settings'
 import type { Settings } from './settings'
 import * as spotify from './spotify'
 import type { SpotifyState } from './useSpotify'
+import * as appleMusic from './useAppleMusic'
+import type { AppleMusicState } from './useAppleMusic'
 
 interface Props {
   settings: Settings
   onChange: (s: Settings) => void
   spotify: SpotifyState
+  apple: AppleMusicState
   /** Message from a failed sign-in redirect, if this load came back from one. */
   authError: string | null
   onClose: () => void
@@ -52,11 +55,13 @@ export default function SettingsPanel({
   settings,
   onChange,
   spotify: sp,
+  apple,
   authError,
   onClose,
   onExportImage,
 }: Props) {
   const configured = spotify.isConfigured()
+  const appleConfigured = appleMusic.isConfigured()
   const [transparentExport, setTransparentExport] = useState(false)
   const [watermarkExport, setWatermarkExport] = useState(true)
 
@@ -261,6 +266,48 @@ export default function SettingsPanel({
                     reach. If Connect doesn&apos;t work for you, that&apos;s why, not a
                     bug. Every release still plays a 30-second preview either way.
                   </p>
+                )}
+              </>
+            )}
+          </section>
+
+          <section>
+            <h3>Apple Music</h3>
+            {apple.connected ? (
+              <>
+                <p className="set-hint">
+                  {apple.connecting ? 'Connecting…' : 'Connected.'}
+                </p>
+                {apple.canPlayFull && (
+                  <p className="set-hint">
+                    <strong>Full-track playback is on.</strong> Releases now play in full
+                    through Apple Music; anything it doesn&apos;t carry falls back to a
+                    preview automatically.
+                  </p>
+                )}
+                {apple.error && <p className="set-error">{apple.error}</p>}
+                <div className="set-buttons">
+                  <button className="set-button" onClick={apple.disconnect}>
+                    Disconnect Apple Music
+                  </button>
+                </div>
+              </>
+            ) : (
+              <>
+                <p className="set-hint">
+                  Connecting Apple Music also plays releases in full, for subscribers —
+                  a second way in, alongside Spotify above.
+                </p>
+                <button
+                  className="set-button primary"
+                  disabled={!appleConfigured || apple.connecting}
+                  onClick={apple.connect}
+                >
+                  {apple.connecting ? 'Connecting…' : 'Connect Apple Music'}
+                </button>
+                {apple.error && <p className="set-error">{apple.error}</p>}
+                {!appleConfigured && (
+                  <p className="set-hint">Apple Music connection isn&apos;t available yet.</p>
                 )}
               </>
             )}

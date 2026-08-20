@@ -5,6 +5,50 @@ this list — what someone would actually notice, not every commit. This file
 is the fuller, developer-facing version; see `git log` for the complete
 history.
 
+## 2026-08-20 — Apple Music: a second full-track provider
+
+- Built on a feature branch (`feature-apple-musickit-playback`), scoped
+  deliberately to playback only — no Apple equivalent of Spotify's
+  saved-releases sync or playlist export in this pass, since MusicKit's
+  library/playlist APIs are different enough to be their own piece of
+  work, not a mechanical port.
+- **`src/applePlayer.ts`** mirrors `spotifyPlayer.ts`'s shape (load SDK
+  once, connect, resolve a track by search, play) using MusicKit JS.
+  Apple's auth model turned out simpler than Spotify's: no OAuth
+  redirect to complete — `configure()` takes the developer token (from
+  `VITE_APPLE_DEV_TOKEN`, already plumbed in from earlier work) and
+  `authorize()` handles sign-in in an Apple-hosted popup, with MusicKit
+  remembering that authorization internally across reloads.
+- **`src/useAppleMusic.ts`** mirrors `useSpotify.ts`'s connect/attach/
+  play pattern, including the same StrictMode ref-guard-resets-on-
+  cleanup fix documented there. One deliberate addition: a local
+  `anjunatree:apple:connected` flag (not a token — MusicKit already
+  persists the real authorization) so a returning, previously-connected
+  listener reconnects automatically, the same experience Spotify gives
+  from its own session, without loading Apple's SDK for a first-time
+  visitor who's never connected.
+- **`src/PlayerBar.tsx`** generalized from a Spotify-or-preview binary
+  to try Spotify, then Apple Music, then the preview — for the rare
+  case a listener has both connected. `Mode` gained `'apple'`; the
+  finished-track watcher, mute/pause controls, and the source badge all
+  now read from whichever provider is actually active instead of
+  assuming Spotify.
+- **API surface verified against real type definitions, not memory or
+  a guess**: Apple's own MusicKit JS reference is a JS-rendered page
+  this project's tooling can't read, so `applePlayer.ts` was built
+  against the community-maintained `musickit-typescript` package's
+  `.d.ts` files (pulled and read directly, not installed as a
+  dependency). One thing that couldn't be verified this way: the exact
+  runtime shape of `api.search()`'s resolved response. `extractSongs()`
+  handles the two shapes Apple's REST docs and MusicKit JS examples
+  show, and throws a specific, visible error if neither matches, rather
+  than silently returning no results — flagged in `docs/DEVELOPMENT.md`
+  as the one thing worth checking against a real developer token and
+  subscriber account, which this session had neither of.
+- `docs/DEVELOPMENT.md`'s "How it works" and roadmap sections, and
+  `src/changelog.ts`, updated to match — this is genuinely
+  listener-facing, not an internal refactor.
+
 ## 2026-08-20 — Spotify Extended Quota is a dead end
 
 - Corrected course after checking Spotify's current policy directly

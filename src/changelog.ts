@@ -8,7 +8,7 @@
 // Bump it alongside adding an entry here; see useUpdateFlow.ts for how it's
 // used to decide whether to show the changelog automatically.
 
-export const APP_VERSION = '2026.08.20d'
+export const APP_VERSION = '2026.08.20e'
 
 export interface ChangelogEntry {
   version: string
@@ -18,6 +18,15 @@ export interface ChangelogEntry {
 }
 
 export const CHANGELOG: ChangelogEntry[] = [
+  {
+    version: '2026.08.20e',
+    date: '20 August 2026',
+    title: 'A second full-track option',
+    items: [
+      'Apple Music is now a second way to hear full tracks, alongside Spotify — connect it in Settings',
+      'Added a Privacy Policy and Terms of Use, linked in the footer',
+    ],
+  },
   {
     version: '2026.08.20d',
     date: '20 August 2026',
