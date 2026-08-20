@@ -34,12 +34,23 @@ npm run ingest
   (Album > EP > Single), packed with a one-shot d3 force simulation
   (`src/data.ts`). Zoom/pan via d3-zoom, hover hit-testing via d3-quadtree,
   double-click resets the view.
-- **Playback** — signed out, or on a free account, every release plays a
-  30-second iTunes preview. Connect Spotify Premium and the same rows play in
-  full through the Web Playback SDK, with automatic fallback to the preview
-  when Spotify doesn't carry a track. The SDK script is the app's only
-  third-party code and it is loaded **only after** a listener connects their
-  account — a visitor who never signs in fetches nothing from Spotify.
+- **Playback** — signed out, every release plays a 30-second iTunes preview.
+  Connecting Spotify Premium or Apple Music plays the same rows in full
+  instead, with automatic fallback to the preview when a track isn't carried
+  by whichever's connected. Both are opt-in third-party code, loaded **only
+  after** a listener explicitly connects that account — a visitor who never
+  signs in fetches nothing from either. `PlayerBar.tsx` tries Spotify first,
+  then Apple Music, then the preview, for the rare case both are connected
+  at once; `spotifyPlayer.ts`/`useSpotify.ts` and
+  `applePlayer.ts`/`useAppleMusic.ts` are otherwise independent, matching
+  the same connect → attach player → resolve-and-play shape so a third
+  provider could join the same way. Apple's connection is simpler than
+  Spotify's: no OAuth redirect to complete, since MusicKit's own
+  `authorize()` handles sign-in and remembers it across reloads on its own —
+  `useAppleMusic.ts` only keeps a local flag (not a token) so a returning,
+  previously-connected listener reconnects automatically. See "Connecting
+  music services" below for what each needs to be enabled at all, and why
+  Apple is the one worth actually planning around.
 - **Previews & track lists** — clicking a release looks it up on the iTunes
   Search API (`src/itunes.ts`, no auth needed), then pulls the collection's
   full track list via `/lookup?entity=song` — every track with its own
@@ -105,7 +116,7 @@ npm run ingest
   crawl, ~45 min at their rate limit) slots in behind the same
   `spectrumScore()` function.
 
-## Connecting music services (login tier — in progress)
+## Connecting music services
 
 The anonymous tier (iTunes previews) needs nothing. The full-track tier for
 subscribers needs credentials only you can create:
@@ -326,7 +337,8 @@ showing up on the board.
 - [x] Full-track playback via the Spotify Web Playback SDK for Premium
       listeners (`src/spotifyPlayer.ts`, `src/useSpotify.ts`). Falls back to
       previews for free accounts and for anything Spotify doesn't carry.
-- [ ] Apple MusicKit JS as a second full-playback provider — now the more
+- [x] Apple MusicKit JS as a second full-playback provider
+      (`src/applePlayer.ts`, `src/useAppleMusic.ts`) — now the more
       important of the two, not just an alternative: Spotify's Extended
       Quota Mode (its only public-access tier) has been effectively closed
       to non-commercial projects since May 2025 (see "Connecting music
@@ -334,6 +346,21 @@ showing up on the board.
       testers indefinitely. Apple has no equivalent MAU/business-entity
       wall on MusicKit JS, making it the realistic path to full-track
       playback for listeners generally, not just a handful of accounts.
+      `PlayerBar.tsx` tries Spotify first, then Apple Music, then the
+      preview. Deliberately scoped to playback only for this first pass —
+      no Apple equivalent of the saved-releases sync or playlist export
+      Spotify has; MusicKit's library/playlist APIs are different enough
+      to be their own piece of work, not a mechanical port.
+      **Unverified**: the exact runtime shape of MusicKit JS's
+      `api.search()` response — built against Apple's REST API docs and
+      the community `musickit-typescript` type definitions (Apple's own
+      MusicKit JS reference is a JS-rendered page this project's tooling
+      can't read), since testing it for real needs a paid Apple Developer
+      account and a live Apple Music subscription, neither available while
+      building this. `applePlayer.ts`'s `extractSongs()` handles the two
+      documented response shapes and throws a specific, visible error if
+      neither matches, rather than failing silently — check the actual
+      response the first time this runs against a real developer token.
 - [x] Personalised map: an opt-in Settings toggle rings releases matching the
       listener's saved Spotify albums/tracks (`spotify.fetchSavedReleaseKeys`,
       matched release-level in `App.tsx`'s `savedNodeIds`), and any traced
