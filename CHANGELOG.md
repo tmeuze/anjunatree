@@ -5,6 +5,26 @@ this list — what someone would actually notice, not every commit. This file
 is the fuller, developer-facing version; see `git log` for the complete
 history.
 
+## 2026-08-20 — Matching icons
+
+- **Replaced colour emoji with theme-aware SVG icons.** Emoji render in
+  their own fixed colour regardless of `currentColor`, so they were the
+  one thing in the icon system that didn't shift with the active theme:
+  the mute button (`🔇`/`🔊`) and the welcome badge/tab (`🌱`). Added
+  `VolumeIcon`/`MuteIcon`/`PlayIcon`/`PauseIcon`/`StopIcon`/`SproutIcon`
+  to `src/Icons.tsx` (same stroke-based, `currentColor` style as the
+  existing `SearchIcon`/`SlidersIcon`) and swapped them into
+  `PlayerBar.tsx` and `Info.tsx`. `TAB_ICON` in `Info.tsx` changed from
+  `Record<InfoTab, string>` to `Record<InfoTab, ReactNode>` to allow it.
+- Left the already-monochrome Unicode symbols alone (`✦ ⚙ ✕ ✓ ◑ ▸ ⋯`,
+  etc.) — those already render in `currentColor` via inherited `color`
+  from theme-token CSS (`--ink`, `--ink-secondary`, `--label-*`), so they
+  already tint with the theme; the emoji were the actual gap. No
+  contrast work was needed beyond that: `--ink`/`--ink-secondary` and the
+  label-accent tokens are already the same CVD/contrast-validated palette
+  everything else in the app draws from (see `src/themes.ts`), so an icon
+  inheriting one of them is validated by construction.
+
 ## 2026-08-20 — Remember me
 
 - **Saved-releases sync now caches to localStorage instead of re-fetching

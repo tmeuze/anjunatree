@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import { labelVar } from './data'
 import { clearStatus, setStatus } from './status'
+import { MuteIcon, PauseIcon, PlayIcon, StopIcon, VolumeIcon } from './Icons'
 import type { SpotifyState } from './useSpotify'
 import type { NowPlaying } from './types'
 
@@ -181,7 +182,7 @@ export default function PlayerBar({
           aria-label={paused ? 'Play' : 'Pause'}
           title={paused ? 'Play' : 'Pause'}
         >
-          {paused ? '▶' : '❚❚'}
+          {paused ? <PlayIcon /> : <PauseIcon />}
         </button>
         <button
           className={`transport-button${muted ? ' active' : ''}`}
@@ -189,7 +190,7 @@ export default function PlayerBar({
           aria-label={muted ? 'Unmute' : 'Mute'}
           title={muted ? 'Unmute' : 'Mute'}
         >
-          {muted ? '🔇' : '🔊'}
+          {muted ? <MuteIcon /> : <VolumeIcon />}
         </button>
         <button
           className="transport-button stop"
@@ -197,7 +198,7 @@ export default function PlayerBar({
           aria-label="Stop playback"
           title="Stop"
         >
-          ■
+          <StopIcon />
         </button>
       </div>
 

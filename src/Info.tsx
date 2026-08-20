@@ -1,6 +1,8 @@
 import { useEffect, useRef, useState } from 'react'
+import type { ReactNode } from 'react'
 import { CHANGELOG } from './changelog'
 import { REPO_URL } from './constants'
+import { SproutIcon } from './Icons'
 
 export type InfoTab = 'welcome' | 'install' | 'about'
 
@@ -10,8 +12,8 @@ const TAB_TITLE: Record<InfoTab, string> = {
   about: 'About',
 }
 
-const TAB_ICON: Record<InfoTab, string> = {
-  welcome: '🌱',
+const TAB_ICON: Record<InfoTab, ReactNode> = {
+  welcome: <SproutIcon />,
   install: '⇩',
   about: '?',
 }
@@ -98,7 +100,9 @@ export default function Info({
             <div className="info-body">
               {tab === 'welcome' && (
                 <>
-                  <p className="info-badge">🌱 New &amp; growing — expect the odd rough edge</p>
+                  <p className="info-badge">
+                    <SproutIcon /> New &amp; growing — expect the odd rough edge
+                  </p>
                   <h2>Every Anjuna release, one map you can listen to.</h2>
                   <p>
                     Time runs left to right. Every mark is a release — click one and it plays.

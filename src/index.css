@@ -756,7 +756,9 @@ body {
 }
 
 .info-badge {
-  display: inline-block;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
   padding: 4px 10px;
   border-radius: 999px;
   background: color-mix(in srgb, var(--label-reflections) 16%, transparent);
@@ -764,6 +766,12 @@ body {
   color: var(--ink);
   font-size: calc(11px * var(--font-scale));
   margin-bottom: 12px;
+}
+
+.info-badge svg {
+  width: 12px;
+  height: 12px;
+  flex-shrink: 0;
 }
 
 .quick-tips {
@@ -972,6 +980,16 @@ body {
   font-size: calc(13px * var(--font-scale));
   cursor: pointer;
   line-height: 1;
+}
+
+.transport-button svg {
+  width: 15px;
+  height: 15px;
+}
+
+.transport-button.primary svg {
+  width: 17px;
+  height: 17px;
 }
 
 .transport-button:hover:not(:disabled) {

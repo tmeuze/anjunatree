@@ -42,3 +42,64 @@ export function SlidersIcon({ className }: IconProps) {
     </svg>
   )
 }
+
+const speaker = <path d="M2 6h2.6L8 3v10L4.6 10H2Z" fill="currentColor" stroke="none" />
+
+/** The speaker alone, no waves — used as the base of both Volume and Mute. */
+export function VolumeIcon({ className }: IconProps) {
+  return (
+    <svg {...common} className={className}>
+      {speaker}
+      <path d="M10.5 5.5c1 .8 1 4.2 0 5" />
+      <path d="M12.3 3.7c2 1.8 2 6.8 0 8.6" />
+    </svg>
+  )
+}
+
+export function MuteIcon({ className }: IconProps) {
+  return (
+    <svg {...common} className={className}>
+      {speaker}
+      <line x1="10.5" y1="5.5" x2="14.5" y2="10.5" />
+      <line x1="14.5" y1="5.5" x2="10.5" y2="10.5" />
+    </svg>
+  )
+}
+
+export function PlayIcon({ className }: IconProps) {
+  return (
+    <svg {...common} className={className}>
+      <path d="M4 2.5v11l9-5.5Z" fill="currentColor" stroke="currentColor" strokeLinejoin="round" />
+    </svg>
+  )
+}
+
+export function PauseIcon({ className }: IconProps) {
+  return (
+    <svg {...common} className={className}>
+      <line x1="5" y1="3" x2="5" y2="13" strokeWidth="2.4" />
+      <line x1="11" y1="3" x2="11" y2="13" strokeWidth="2.4" />
+    </svg>
+  )
+}
+
+export function StopIcon({ className }: IconProps) {
+  return (
+    <svg {...common} className={className}>
+      <rect x="3.5" y="3.5" width="9" height="9" rx="1.5" fill="currentColor" stroke="none" />
+    </svg>
+  )
+}
+
+/** A sprout — used where the app is introducing itself ("new & growing"),
+ * standing in for the 🌱 emoji so it tints with the theme like every other
+ * icon instead of always rendering in its own fixed colour. */
+export function SproutIcon({ className }: IconProps) {
+  return (
+    <svg {...common} className={className}>
+      <path d="M8 14V7.5" />
+      <path d="M8 7.5C8 7.5 3.2 6.8 3.2 2.3C7.4 2.3 8 6.6 8 7.5Z" />
+      <path d="M8 9.5C8 9.5 12 8.9 12 5.1C8.5 5.1 8 8.8 8 9.5Z" />
+    </svg>
+  )
+}
