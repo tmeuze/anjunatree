@@ -8,7 +8,7 @@
 // Bump it alongside adding an entry here; see useUpdateFlow.ts for how it's
 // used to decide whether to show the changelog automatically.
 
-export const APP_VERSION = '2026.08.16d'
+export const APP_VERSION = '2026.08.20'
 
 export interface ChangelogEntry {
   version: string
@@ -19,16 +19,16 @@ export interface ChangelogEntry {
 
 export const CHANGELOG: ChangelogEntry[] = [
   {
-    version: '2026.08.16d',
-    date: '16 August 2026',
+    version: '2026.08.20',
+    date: '20 August 2026',
     title: 'Remember me',
     items: [
       'Saved-releases matching no longer re-checks your whole Spotify library on every visit — it’s cached for a day, with a "Refresh now" in Settings if you want it sooner',
     ],
   },
   {
-    version: '2026.08.16c',
-    date: '16 August 2026',
+    version: '2026.08.17',
+    date: '17 August 2026',
     title: 'Small fixes',
     items: [
       'The "update ready" banner is now its own clear notice at the top of the screen, instead of unstyled text that could land on top of other messages',
@@ -47,14 +47,21 @@ export const CHANGELOG: ChangelogEntry[] = [
   {
     version: '2026.08.16',
     date: '16 August 2026',
+    title: 'Cleaner search',
+    items: [
+      'Searching for something with no matches now says so, instead of going quiet',
+      'Map labels stay legible over the dots sitting underneath them',
+    ],
+  },
+  {
+    version: '2026.08.13',
+    date: '13 August 2026',
     title: 'Sharper edges',
     items: [
       'Fixed the logo’s trunk and timeline rendering invisible in every theme',
       '“Radio” is now “Surprise Me”',
       'Header controls stay right-aligned and stop overlapping at every screen size, with a new one-tap Theme menu',
       'Search is visible by default instead of hiding behind an icon',
-      'Searching for something with no matches now says so, instead of going quiet',
-      'A social preview card now shows up when a link to AnjunaTree is shared elsewhere',
     ],
   },
   {
@@ -66,6 +73,7 @@ export const CHANGELOG: ChangelogEntry[] = [
       'The player is now front and centre, with real play/pause, mute and stop controls',
       'The AnjunaTree mark got its real artwork — a palm fan in your theme’s own colours',
       'Fixed previews occasionally failing to load on iPhone',
+      'A social preview card now shows up when a link to AnjunaTree is shared elsewhere',
     ],
   },
   {
