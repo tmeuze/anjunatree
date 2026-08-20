@@ -85,7 +85,7 @@ how load-bearing they are:
 The full, versioned list of every package this project depends on is
 `package.json` / `package-lock.json` — nothing here is hidden or vendored in
 without attribution. If you notice a credit that's missing or wrong,
-[open an issue](https://github.com/tmeuze/anjunatree/issues/new).
+[open an issue](https://github.com/afterglowfc/anjunatree/issues/new).
 
 ## Contributing
 

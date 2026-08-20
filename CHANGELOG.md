@@ -5,6 +5,24 @@ this list — what someone would actually notice, not every commit. This file
 is the fuller, developer-facing version; see `git log` for the complete
 history.
 
+## 2026-08-20 — Moved to the Afterglow Fan Collective org
+
+- Repo transferred from `tmeuze/anjunatree` to
+  `afterglowfc/anjunatree` — GitHub's own redirect covers git
+  clones/pulls and most web links, but don't recreate a repo at the old
+  path or it breaks. Updated everywhere the old path was hardcoded:
+  `src/constants.ts`'s `REPO_URL` (the genre-placement Discussion link
+  in `ReleasePanel.tsx` derives from it, so no separate change needed
+  there), the README's issue link, and both Discussions links in
+  `.github/ISSUE_TEMPLATE/config.yml`.
+- The [roadmap project](https://github.com/users/tmeuze/projects/2)
+  stays a personal, not org, project for now — it's being recreated
+  under the org separately, at which point
+  `.github/workflows/add-feature-to-roadmap.yml` and the two docs that
+  reference it (this file, `docs/DEVELOPMENT.md`) will need their URLs
+  updated too, plus `ADD_TO_PROJECT_PAT` re-checked for org-project
+  write access.
+
 ## 2026-08-20 — Issue templates
 
 - Replaced free-text issue reporting with two [GitHub issue forms](https://docs.github.com/en/communities/using-templates-to-encourage-useful-issues-and-pull-requests/configuring-issue-templates-for-your-repository):
